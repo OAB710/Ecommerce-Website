@@ -1,5 +1,5 @@
 import React from 'react'
-import { POPULAR } from "../assets/data"
+import POPULAR from "../assets/popular"
 import Item from './Item'
 const Popular = () => {
   return (

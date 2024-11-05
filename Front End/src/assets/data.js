@@ -22,7 +22,7 @@ import youtube from './youtube.svg'
 import linkedin from './linkedin.svg'
 
 
- const POPULAR = [
+const POPULAR = [
   {
     id:1,
     name:"Striped Flutter Sleeve Overlap Collar Peplum Hem Blouse",
