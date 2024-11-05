@@ -1,9 +1,12 @@
 import Hero from "../components/Hero"
-
+import Popular from "../components/Popular"
 
 const Home = () => {
   return (
+    <>
     <Hero />
+    <Popular/>
+    </>
   )
 }
 
