@@ -1,4 +1,6 @@
 # Ecommerce-Website
- NodeJS, Docker
+NodeJS, Docker
 
- To run, using: npm run dev
+How to run:
+1. Install all the pack to run a project: npm install (You have to access the directory into that folder)
+2. Run the website: npm run dev
