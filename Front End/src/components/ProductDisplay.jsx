@@ -1,3 +1,5 @@
+import { useContext } from "react"
+import {ShopContext} from "../Context/ShopContext"
 import product_rt_1 from "../assets/product_rt_1.png"
 import product_rt_2 from "../assets/product_rt_2.png"
 import product_rt_3 from "../assets/product_rt_3.png"
@@ -5,6 +7,8 @@ import product_rt_4 from "../assets/product_rt_4.png"
 import {MdStar} from "react-icons/md"
 const ProductDisplay = (props) => {
     const {product}=props;
+    const {addToCart} = useContext(ShopContext);
+
   return (
     <section >
         <div className="flex flex-col gap-14
@@ -47,7 +51,7 @@ const ProductDisplay = (props) => {
                         <div className="ring-2 ring-slate-900/10 h-10 w-10 flexCenter cursor-pointer" >XL</div>
                     </div>
                     <div className="flex flex-col gap-y-3 mb-4 max-w-[555px]">
-                        <button  className="btn_dark_outline !rounded-none
+                        <button onClick={() => {addToCart(product.id)}} className="btn_dark_outline !rounded-none
                         uppercase regular-14 tracking-widest ">Add to cart</button>
                         <button className="btn_dark_rounded !rounded-none
                         uppercase regular-14 tracking-widest ">Buy it now</button>
