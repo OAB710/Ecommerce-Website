@@ -7,8 +7,8 @@ const multer = require("multer");
 const path = require("path");
 const cors = require("cors");
 
-const username = encodeURIComponent("oabphd");
-const password = encodeURIComponent("MERNfinal");
+const username = encodeURIComponent("binhquyen");
+const password = encodeURIComponent("123");
 const database = encodeURIComponent("estore");
 
 app.use(express.json());
@@ -84,34 +84,55 @@ const Product = mongoose.model("Product", {
 });
 
 app.post("/addproduct", async (req, res) => {
-  try {
-    const product = new Product({
-      id: req.body.id,
-      name: req.body.name,
-      image: req.body.image,
-      category: req.body.category,
-      new_price: req.body.new_price,
-      old_price: req.body.old_price,
-    });
+let products = await Product.find({});
+let id;
 
-    console.log(product);
-    await product.save();
-    console.log("Saved");
+if (products.length > 0) {
+  let last_product_array = products.slice(-1);
+  let last_product = last_product_array[0];
+  id = last_product.id + 1; 
+} else {
+  id = 1;
+}
+  const product = new Product({
+    id: id,
+    name: req.body.name,
+    image: req.body.image,
+    category: req.body.category,
+    new_price: req.body.new_price,
+    old_price: req.body.old_price, 
+  
+  });
+  console.log(product);
+await product.save();
+console.log("Saved");
 
-    res.json({
-      success: true,
-      name: req.body.name,
-    });
-  } catch (error) {
-    console.error("Error adding product:", error);
-    res.status(500).json({ error: error.message });
-  }
+res.json({
+  success: true,
+  name: req.body.name, 
+});
+});
+app.post('/removeproduct', async (req, res) => {
+  await Product.findOneAndDelete({ id: req.body.id }); 
+  console.log("Removed");
+
+  res.json({
+    success: true,
+    name: req.body.name,   
+
+  });
+});
+
+
+app.get('/allproducts', async (req, res) => {
+  let products = await Product.find({});
+  console.log("All products fetched");
+  res.send(products);
 });
 
 app.listen(port, (error) => {
   if (!error) {
     console.log("Server is running on port " + port);
-  } else {
-    console.log("Error: " + error);
+    
   }
 });
