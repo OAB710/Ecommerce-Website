@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    container_name: admin_service
+    ports:
+      - "5174:5174"  # Maps port 5174 on the container to port 5174 on localhost
+    environment:
+      - NODE_ENV=development
+    command: ["npm", "run", "dev", "--", "--host", "--port", "5174"]
+
+  frontend:
+    build:
+      context: ./Front End
+      dockerfile: Dockerfile
+    container_name: frontend_service
+    ports:
+      - "5173:5173"  # Maps port 5173 on the container to port 5173 on localhost
+    environment:
+      - NODE_ENV=development
+    command: ["npm", "run", "dev", "--", "--host", "--port", "5173"]
+
+  backend:
+    build:
+      context: ./Back End
+      dockerfile: Dockerfile
+    container_name: backend_service
+    ports:
+      - "4000:4000"  # Maps port 4000 on the container to port 4000 on localhost
+    environment:
+      - NODE_ENV=development
+    command: ["node", "index.js"]
