@@ -21,8 +21,10 @@ mongoose.connect(
 
 // Api creation
 app.get("/", (req, res) => {
-  res.send("Express App is running");
+  const imageId = process.env.HOSTNAME || "not running in Docker"; // Giá trị mặc định nếu không có HOSTNAME
+  res.send(`Express App is running. Container ID: ${imageId}`);
 });
+
 
 // Image storage engine
 const storage = multer.diskStorage({
