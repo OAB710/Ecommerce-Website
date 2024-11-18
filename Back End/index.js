@@ -7,6 +7,12 @@ const multer = require("multer");
 const path = require("path");
 const cors = require("cors");
 
+// const redis = require("redis");
+// const client = redis.createClient({
+//   host: 'redis'
+//   port: 6379
+// });
+
 const username = encodeURIComponent("binhquyen");
 const password = encodeURIComponent("123");
 const database = encodeURIComponent("estore");
@@ -24,7 +30,6 @@ app.get("/", (req, res) => {
   const imageId = process.env.HOSTNAME || "not running in Docker"; // Giá trị mặc định nếu không có HOSTNAME
   res.send(`Express App is running. Container ID: ${imageId}`);
 });
-
 
 // Image storage engine
 const storage = multer.diskStorage({
@@ -130,6 +135,28 @@ app.get('/allproducts', async (req, res) => {
   console.log("All products fetched");
   res.send(products);
 });
+// app.get('/allproducts', async (req, res) => {
+//   const cacheKey = 'all_products';
+
+//   
+//   client.get(cacheKey, async (err, cachedData) => {
+//     if (cachedData) {
+//       
+//       console.log("Fetched from Redis cache");
+//       return res.send(JSON.parse(cachedData));
+//     } else {
+// 
+//       let products = await Product.find({});
+//       console.log("All products fetched from MongoDB");
+
+//       Save data in Redis cache
+//       client.setex(cacheKey, 3600, JSON.stringify(products));
+
+//       res.send(products);
+//     }
+//   });
+// });
+
 
 // Schema user model
 const User = mongoose.model('User', {
@@ -274,6 +301,9 @@ app.post('/getcart', fetchUser, async (req, res) => {
   res.json(userData.cartData);
 });
 
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Server is running on port ${port}`);
+app.listen(port, (error) => {
+  if (!error) {
+    console.log("Server is running on port " + port);
+    
+  }
 });
