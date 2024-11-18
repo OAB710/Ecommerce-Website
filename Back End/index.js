@@ -245,23 +245,34 @@ const fetchUser = async (req, res, next) => {
 // creating endpoint for adding products in cartdata
 app.post('/addtocart', fetchUser, async (req, res) => {
   let userData = await User.findOne({ _id: req.user.id });
-  userData.cartData[req.body.itemId] += 1;
-  await User.findOneAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
-  res.json("Added");
+  if (userData) {
+    userData.cartData[req.body.itemId] += 1;
+    await User.findOneAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
+    res.json("Added");
+  } else {
+    // Handle the case where no user is found
+    res.status(404).json({ error: 'User not found' });
+  }
 });
 
 // creating endpoint for removing cartData
 app.post('/removefromcart', fetchUser, async (req, res) => {
   console.log("Removed", req.body.itemId);
 
-  let userData = await User.findOne({ _id: req.user.id });
-  if (userData.cartData[req.body.itemId] > 0)
+  let userData = await User.findOne({ _id: req.user.id 
+ });
 
-    userData.cartData[req.body.itemId]   
- -= 1;
-  await User.findOneAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
-
-  res.send("Removed");   
+  if (userData && userData.cartData) { // Check if userData and cartData exist
+    if (userData.cartData[req.body.itemId] > 0) {
+      userData.cartData[req.body.itemId] -= 1;
+      await User.findOneAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
+    } 
+    res.send("Removed"); 
+ 
+  } else {
+    // Handle the case where no user or cartData is found
+    res.status(404).json({ error: 'User or cart data not found' });
+  }
 
 });
 
@@ -269,7 +280,13 @@ app.post('/getcart', fetchUser, async (req, res) => {
   console.log('Get cart');
 
   let userData = await User.findOne({ _id: req.user.id });
-  res.json(userData.cartData);
+
+  if (userData && userData.cartData) { // Check if userData and cartData exist
+    res.json(userData.cartData); 
+  } else {
+    // Handle the case where no user or cartData is found
+    res.status(404).json({ error: 'User or cart data not found' }); 
+  }
 });
 
 app.listen(port, (error) => {
