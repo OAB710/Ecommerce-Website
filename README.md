@@ -1,4 +1,3 @@
-```markdown
 # Ecommerce MERN Project
 
 This project is an ecommerce application built using the MERN stack (MongoDB, Express, React, Node.js). It provides a seamless online shopping experience and follows a microservices architecture to ensure scalability and maintainability. The project is divided into three main components: **Admin**, **Frontend**, and **Backend**, each with its own configuration and purpose.
@@ -7,7 +6,6 @@ This project is an ecommerce application built using the MERN stack (MongoDB, Ex
 
 ## Project Structure
 
-```plaintext
 .gitattributes
 .vscode/
   settings.json
@@ -50,7 +48,6 @@ Front End/
 nginx.conf
 package.json
 README.md
-```
 
 ---
 
