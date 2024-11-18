@@ -1,5 +1,3 @@
-Here’s the combined README file based on both provided files:
-
 ```markdown
 # Ecommerce MERN Project
 
