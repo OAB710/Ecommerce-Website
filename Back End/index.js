@@ -57,7 +57,7 @@ app.post("/upload", upload.single("product"), (req, res) => {
 
 const Product = mongoose.model("Product", {
   id: {
-    type: Number,
+    type: String,
     required: true,
   },
   name: {
@@ -77,9 +77,30 @@ const Product = mongoose.model("Product", {
     required: true,
   },
   old_price: {
-    type: String,
+    type: Number,
     required: true,
   },
+  variants: [
+    {
+      color: {
+        type: String,
+        required: true,
+      },
+      sizes: [
+        {
+          size: {
+            type: String,
+            required: true,
+            enum: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"], // Default sizes
+          },
+          quantity: {
+            type: Number,
+            required: true,
+          },
+        },
+      ],
+    },
+  ],
   date: {
     type: Date,
     default: Date.now,
@@ -90,44 +111,62 @@ const Product = mongoose.model("Product", {
   },
 });
 
-app.post("/addproduct", async (req, res) => {
-let products = await Product.find({});
-let id;
 
-if (products.length > 0) {
-  let last_product_array = products.slice(-1);
-  let last_product = last_product_array[0];
-  id = last_product.id + 1; 
-} else {
-  id = 1;
-}
+app.post("/addproduct", async (req, res) => {
+  let products = await Product.find({});
+  let id;
+
+  if (products.length > 0) {
+    let last_product_array = products.slice(-1);
+    let last_product = last_product_array[0];
+    id = last_product.id + 1; 
+  } else {
+    id = 1;
+  }
+
   const product = new Product({
     id: id,
     name: req.body.name,
     image: req.body.image,
     category: req.body.category,
     new_price: req.body.new_price,
-    old_price: req.body.old_price, 
-  
+    old_price: req.body.old_price,
+    variants: req.body.variants,
+    date: req.body.date,
+    available: req.body.available,
   });
-  console.log(product);
-await product.save();
-console.log("Saved");
 
-res.json({
-  success: true,
-  name: req.body.name, 
-});
-});
-app.post('/removeproduct', async (req, res) => {
-  await Product.findOneAndDelete({ id: req.body.id }); 
-  console.log("Removed");
+  console.log(product);
+  await product.save();
+  console.log("Saved");
 
   res.json({
     success: true,
-    name: req.body.name,   
-
+    name: req.body.name, 
   });
+});
+app.post('/removeproduct', async (req, res) => {
+  try {
+    const result = await Product.findOneAndDelete({ id: req.body.id });
+    if (result) {
+      console.log("Removed");
+      res.json({
+        success: true,
+        message: "Product removed successfully",
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+  } catch (error) {
+    console.error("Error removing product:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while removing the product",
+    });
+  }
 });
 
 app.get('/allproducts', async (req, res) => {
@@ -159,26 +198,160 @@ app.get('/allproducts', async (req, res) => {
 
 
 // Schema user model
+// const User = mongoose.model('User', {
+//   name: {
+//     type: String,
+//   },
+//   email: {
+//     type: String,
+//     unique: true,
+//   },
+//   password: {
+//     type: String,
+//   },
+//   cartData: { 
+//     type: Object,
+//   },
+//   date: {
+//     type: Date,
+//     default: Date.now,
+//   },
+// });
 const User = mongoose.model('User', {
   name: {
     type: String,
+    required: true,
   },
   email: {
     type: String,
     unique: true,
+    required: true,
   },
   password: {
     type: String,
+    required: true,
   },
-  cartData: { 
-    type: Object,
+  phone: {
+    type: String,
+  },
+  address: {
+    type: String,
+    required: true,
+  },
+  role: {
+    type: String,
+    enum: ['customer', 'admin'],
+    default: 'customer',
+  },
+  points: {
+    type: Number,
+    default: 0,
+  },
+  isBanned: {
+    type: Boolean,
+    default: false,
+  },
+});
+//Category
+const Category = mongoose.model('Category', {
+  name: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
   },
   date: {
     type: Date,
     default: Date.now,
   },
 });
-
+//review
+const Review = mongoose.model('Review', {
+  product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  review: {
+    type: String,
+    required: true,
+  },
+  rating: {
+    type: Number,
+    required: true,
+  },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+});
+//cart
+const Cart = mongoose.model('Cart', {
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  products: [
+    {
+      product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+      quantity: Number,
+    },
+  ],
+  total: {
+    type: Number,
+    required: true,
+  },
+});
+//coupon
+const Coupon = mongoose.model('Coupon', {
+  code: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  discountValue: {
+    type: Number,
+    required: true,
+  },
+  expirationDate: {
+    type: Date,
+    required: true,
+  },
+  used: {
+    type: Boolean,
+    default: false,
+  },
+  creationDate: {
+    type: Date,
+    default: Date.now,
+  },
+});
+//order
+const Order = mongoose.model('Order', {
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  products: [
+    {
+      product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+      quantity: Number,
+      price: Number,
+    },
+  ],
+  total: {
+    type: Number,
+    required: true,
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'confirmed', 'shipping', 'delivered'],
+    default: 'pending',
+  },
+  shippingAddress: {
+    type: String,
+    required: true,
+  },
+  paymentMethod: {
+    type: String,
+  },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+});
 // Creating endpoint for registering the user
 app.post('/signup', async (req, res) => {
   let check = await User.findOne({ email: req.body.email });
@@ -252,7 +425,40 @@ app.get('/popularproducts', async (req, res) => {
   console.log("popular products Fetched");
   res.send(popularproducts); 
 });
+// Fetch product details
+// Fetch product details
+app.get('/product/:id', async (req, res) => {
+  try {
+    const product = await Product.findOne({ id: req.params.id });
+    if (product) {
+      res.json(product);
+    } else {
+      res.status(404).json({ success: false, message: "Product not found" });
+    }
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    res.status(500).json({ success: false, message: "An error occurred while fetching the product" });
+  }
+});
 
+// Edit product details
+app.post('/editproduct/:id', async (req, res) => {
+  try {
+    const updatedProduct = await Product.findOneAndUpdate(
+      { id: req.params.id },
+      req.body,
+      { new: true }
+    );
+    if (updatedProduct) {
+      res.json({ success: true, message: "Product updated successfully" });
+    } else {
+      res.status(404).json({ success: false, message: "Product not found" });
+    }
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(500).json({ success: false, message: "An error occurred while updating the product" });
+  }
+});
 
 // creating middleware to fetch user
 const fetchUser = async (req, res, next) => {
@@ -300,6 +506,80 @@ app.post('/getcart', fetchUser, async (req, res) => {
   let userData = await User.findOne({ _id: req.user.id });
   res.json(userData.cartData);
 });
+
+// Fetch all users
+app.get('/allusers', async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ success: false, message: "An error occurred while fetching users" });
+  }
+});
+// Remove user
+app.post('/removeuser', async (req, res) => {
+  try {
+    const result = await User.findOneAndDelete({ _id: req.body.id });
+    if (result) {
+      res.json({ success: true, message: "User removed successfully" });
+    } else {
+      res.status(404).json({ success: false, message: "User not found" });
+    }
+  } catch (error) {
+    console.error("Error removing user:", error);
+    res.status(500).json({ success: false, message: "An error occurred while removing the user" });
+  }
+});
+
+// Fetch user details
+app.get('/user/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ success: false, message: "User not found" });
+    }
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({ success: false, message: "An error occurred while fetching the user" });
+  }
+});
+
+// Edit user details
+app.post('/edituser/:id', async (req, res) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    if (updatedUser) {
+      res.json({ success: true, message: "User updated successfully" });
+    } else {
+      res.status(404).json({ success: false, message: "User not found" });
+    }
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ success: false, message: "An error occurred while updating the user" });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 app.listen(port, (error) => {
   if (!error) {
