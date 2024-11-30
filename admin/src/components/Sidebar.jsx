@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import addProduct from "../assets/addproduct.png";
 import listProduct from "../assets/productlist.png";
 import listUser from "../assets/listuser.png";
+import listOrder from "../assets/listorder.png";
 
 const Sidebar = () => {
   return (
@@ -23,6 +24,12 @@ const Sidebar = () => {
         <button className="flexCenter gap-2 rounded-md bg-primary h-12 w-44 xs:w-44 medium-16">
           <img src={listUser} alt="User List" height={50} width={50} />
           <span>User List</span> 
+        </button>
+      </Link>
+      <Link to="/listorder">
+        <button className="flexCenter gap-2 rounded-md bg-primary h-12 w-44 xs:w-44 medium-16">
+          <img src={listOrder} alt="Order List" height={50} width={50} />
+          <span>Order List</span>
         </button>
       </Link>
     </div>

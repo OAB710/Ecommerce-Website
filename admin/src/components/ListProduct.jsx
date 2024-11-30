@@ -40,6 +40,10 @@ const ListProduct = () => {
     navigate(`/editproduct/${id}`);
   };
 
+  const calculateTotalQuantity = (variants) => {
+    return variants.reduce((total, variant) => total + variant.quantity, 0);
+  };
+
   return (
     <div className="p-2 box-border bg-white mb-6 rounded-sm w-full mt-4 sm:p-4 sm:m-7">
       <div className="flex justify-between items-center p-5">
@@ -89,7 +93,7 @@ const ListProduct = () => {
                 <td>{product.category}</td>
                 <td>{product.variants.map(variant => variant.size).join(', ')}</td>
                 <td>{product.variants.map(variant => variant.color).join(', ')}</td>
-                <td>{product.variants.map(variant => variant.quantity).join(', ')}</td>
+                <td>{calculateTotalQuantity(product.variants)}</td>
                 <td>{new Date(product.date).toLocaleDateString()}</td>
                 <td>{product.available ? "Yes" : "No"}</td>
                 <td>
