@@ -9,9 +9,11 @@ import Footer from "./components/Footer";
 import bannermens from "./assets/bannermens.png"
 import bannerwomens from "./assets/bannerwomens.png"
 import bannerkids from "./assets/bannerkids.png"
+import ProfilePage from './pages/Profile'
 export default function App() {
   return (
     <main className="bg-primary text-tertiary">
+      {/* <ProfilePage /> */}
       <BrowserRouter>
         <Header />
         <Routes>
