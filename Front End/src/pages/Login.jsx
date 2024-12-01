@@ -39,7 +39,9 @@ const Login = () => {
     })
       .then((response) => response.json())
       .then((data) => responseData = data);
-
+      if (formData.email === 'admin@gmail.com' && formData.password === '123') {
+        window.location.replace('/admin'); 
+      }
     if (responseData.success) {
       localStorage.setItem('auth-token', responseData.token);
       window.location.replace('/');
