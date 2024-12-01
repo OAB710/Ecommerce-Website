@@ -88,6 +88,7 @@ const Login = () => {
 
       })
         .then(response => {
+          console.log("hello")
           // Check if the response status is not ok (not in the range 200-299)
           if (!response.ok) {
             // Throw an error to be caught by the catch block

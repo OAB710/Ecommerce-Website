@@ -7,7 +7,7 @@ const multer = require("multer");
 const path = require("path");
 const cors = require("cors");
 const { type } = require("os");
-
+const bcrypt = require('bcrypt');
 const username = encodeURIComponent("binhquyen");
 const password = encodeURIComponent("123");
 const database = encodeURIComponent("estore");
@@ -183,6 +183,7 @@ const User = mongoose.model('User', {
 
 // Creating endpoint for registering the user
 app.post('/signup', async (req, res) => {
+  console.log(req.body);
   let check = await User.findOne({ email: req.body.email });
   if (check) {
     return res.status(400).json({ 
@@ -233,20 +234,16 @@ app.post('/login', async (req, res) => {
    
     // Case 1: Facebook login (only email is provided)
    
-
+    
     // Case 2: Normal login (email and password are provided)
     if (email && password) {
       const user = await User.findOne({ email });
       if (!user) {
-        return res.status(401).json({ success: false, errors: 'Invalid email or password' });
+        return res.status(401).json({ success: false, errors: 'Invalid user' });
       }
-
+ 
       // Assuming bcrypt is used for password hashing
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(401).json({ success: false, errors: 'Invalid email or password' });
-      }
-
+      
       const token = jwt.sign({ userId: user._id }, 'your_jwt_secret');
       return res.json({ success: true, token });
     }
