@@ -4,7 +4,7 @@ export default function App() {
   return (
     <main className="bg-primary text-tertiary">
       <Navbar/>
-      <Admin/>
+        <Admin/>
     </main>
   )
 }
