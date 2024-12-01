@@ -245,23 +245,34 @@ const fetchUser = async (req, res, next) => {
 // creating endpoint for adding products in cartdata
 app.post('/addtocart', fetchUser, async (req, res) => {
   let userData = await User.findOne({ _id: req.user.id });
-  userData.cartData[req.body.itemId] += 1;
-  await User.findOneAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
-  res.json("Added");
+  if (userData) {
+    userData.cartData[req.body.itemId] += 1;
+    await User.findOneAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
+    res.json("Added");
+  } else {
+    // Handle the case where no user is found
+    res.status(404).json({ error: 'User not found' });
+  }
 });
 
 // creating endpoint for removing cartData
 app.post('/removefromcart', fetchUser, async (req, res) => {
   console.log("Removed", req.body.itemId);
 
-  let userData = await User.findOne({ _id: req.user.id });
-  if (userData.cartData[req.body.itemId] > 0)
+  let userData = await User.findOne({ _id: req.user.id 
+ });
 
-    userData.cartData[req.body.itemId]   
- -= 1;
-  await User.findOneAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
-
-  res.send("Removed");   
+  if (userData && userData.cartData) { // Check if userData and cartData exist
+    if (userData.cartData[req.body.itemId] > 0) {
+      userData.cartData[req.body.itemId] -= 1;
+      await User.findOneAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
+    } 
+    res.send("Removed"); 
+ 
+  } else {
+    // Handle the case where no user or cartData is found
+    res.status(404).json({ error: 'User or cart data not found' });
+  }
 
 });
 
@@ -269,7 +280,13 @@ app.post('/getcart', fetchUser, async (req, res) => {
   console.log('Get cart');
 
   let userData = await User.findOne({ _id: req.user.id });
-  res.json(userData.cartData);
+
+  if (userData && userData.cartData) { // Check if userData and cartData exist
+    res.json(userData.cartData); 
+  } else {
+    // Handle the case where no user or cartData is found
+    res.status(404).json({ error: 'User or cart data not found' }); 
+  }
 });
 
 app.listen(port, (error) => {
@@ -277,4 +294,60 @@ app.listen(port, (error) => {
     console.log("Server is running on port " + port);
     
   }
+});
+
+app.get('/dashboard-data', async (req, res) => {
+  const totalProducts = await Product.countDocuments();
+  res.json({
+    totalProducts,
+  });
+});
+
+const Coupons = mongoose.model('Coupons', {
+  code: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  discount: {
+    type: Number,
+    required: true,
+  },
+  creationTime: {
+    type: Date,
+    default: Date.now,
+  },
+  expirationDate: {
+    type: Date,
+    required: true,
+  },
+  used: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+app.get('/allcoupons', async (req, res) => {
+  const coupons = await Coupons.find({});
+  res.json(coupons);
+});
+
+app.post('/addcoupons', async (req, res) => {
+  const { code, discount, expirationDate } = req.body;
+  const coupon = new Coupons({ code, discount, expirationDate });
+  try {
+    await coupon.save();
+    res.json({ success: true });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/removecoupon', async (req, res) => {
+  await Coupons.findOneAndDelete({ _id: req.body.id });
+  console.log("Removed");
+
+  res.json({
+    success: true,
+  });
 });
