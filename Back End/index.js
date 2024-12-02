@@ -7,16 +7,11 @@ const multer = require("multer");
 const path = require("path");
 const cors = require("cors");
 
-const { type } = require("os");
-const bcrypt = require('bcrypt');
-
-
 // const redis = require("redis");
 // const client = redis.createClient({
 //   host: 'redis'
 //   port: 6379
 // });
-
 
 const username = encodeURIComponent("binhquyen");
 const password = encodeURIComponent("123");
@@ -333,57 +328,6 @@ app.get('/allproducts', async (req, res) => {
 
 
 // Schema user model
-
-const User = mongoose.model('User', {
-  name: {
-    type: String,
-    required: true, // Thêm required để đảm bảo field này luôn có giá trị
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  password: {
-    type: String,
-    required: false,
-  },
-  addresses: [{ // Định nghĩa addresses là một mảng các object
-    address: {
-      type: String,
-      required: true,
-    },
-    city: {
-      type: String,
-      required: true,
-    },
-    postalCode: {
-      type: String,
-      required: true,
-    },
-    country: {
-      type: String,
-      required: true,
-    },
-    _id: false
-  }],
-  phone: {
-    type: String,   },
-  loyaltyPoints: {
-    type: Number,
-    default: 0, //  Giá trị mặc định là 0
-  },
-  date: { 
-    type: Date, 
-    default: Date.now 
-  },
-  facebookId: {
-    type: String,
-    unique: true,
-    spare:true,
-  }
-});
-
 // const User = mongoose.model('User', {
 //   name: {
 //     type: String,
@@ -404,10 +348,8 @@ const User = mongoose.model('User', {
 //   },
 // });
 
-
 // Creating endpoint for registering the user
 app.post('/signup', async (req, res) => {
-  console.log(req.body);
   let check = await User.findOne({ email: req.body.email });
   if (check) {
     return res.status(400).json({ 
@@ -420,20 +362,17 @@ app.post('/signup', async (req, res) => {
   for (let i = 0; i < 300; i++) {
     cart[i] = 0;
   }
-  
- try { 
-  const { username, email, password, addresses, phone } = req.body; // Lấy dữ liệu từ req.body
-  
+
   const user = new User({
-    name: username,  // Make sure this matches your schema field name
-    email: email,
-    password: password,
-    addresses: addresses,
-    phone: phone,
+    name: req.body.username,
+    email: req.body.email,
+    password: req.body.password, 
+    cartData: cart,
   });
-  console.log(user);
+
   await user.save();
-   const data = {
+
+  const data = {
     user: {
       id: user._id // Use user._id to access the user's ID
     }
@@ -441,69 +380,30 @@ app.post('/signup', async (req, res) => {
   
   const token = jwt.sign(data, 'secret_ecom'); 
   
-  res.json({ success: true, token });  // await user.save();
-    // res.status(201).json({ message: 'User created successfully' });
- } catch (error) {
-  console.error('Error creating user:', error);
-    res.status(500).json({ error: error});
- }
-
-  
-
- 
+  res.json({ success: true, token });
 });
+
+// Creating endpoint for user login
 app.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-   
-    // Case 1: Facebook login (only email is provided)
-   
-    
-    // Case 2: Normal login (email and password are provided)
-    if (email && password) {
-      const user = await User.findOne({ email });
-      if (!user) {
-        return res.status(401).json({ success: false, errors: 'Invalid user' });
-      }
- 
-      // Assuming bcrypt is used for password hashing
-      
-      const token = jwt.sign({ userId: user._id }, 'your_jwt_secret');
-      return res.json({ success: true, token });
+  let user = await User.findOne({ email: req.body.email });
+
+  if (user) {
+    const passMatch = req.body.password === user.password; 
+    if (passMatch) {
+      const data = {
+        user: {
+          id: user._id // Use _id to get the user's ID
+        }
+      };
+
+      const token = jwt.sign(data, 'secret_ecom');
+      res.json({ success: true, token });
+    } else {
+      res.json({ success: false, errors: "Wrong Password" });
     }
-
-    // If neither condition is met, return an error
-    res.status(400).json({ success: false, errors: 'Invalid login request' });
-  } catch (error) {
-    console.error('Error during login:', error);
-    res.status(500).json({ success: false, errors: 'Failed to log in' });
+  } else {
+    res.json({ success: false, errors: "Wrong Email address" });
   }
-});
-app.post('/login1', async (req, res) => {
-  try {
-    const { email } = req.body;
-    
-    // Case 1: Facebook login (only email is provided)
-    if (email) {
-      const user = await User.findOne({ email });
-      if (user) {
-        const token = jwt.sign({ userId: user._id }, 'your_jwt_secret');
-        return res.json({ userExists: true, token });
-      } else {
-        return res.json({ userExists: false });
-      }
-    }
-
-    // Case 2: Normal login (email and password are provided)
-    
-
-    // If neither condition is met, return an error
-  
-  } catch (error) {
-    console.error('Error during login:', error);
-    res.status(500).json({ success: false, errors: 'Failed to log in' });
-  }
- 
 });
 
 // creating endpoint for latestproducts
