@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MdSave } from "react-icons/md";
+import { MdSave, MdAdd, MdRemove } from "react-icons/md";
 
 const EditUser = () => {
   const { userId } = useParams();
@@ -9,7 +9,7 @@ const EditUser = () => {
     name: "",
     email: "",
     phone: "",
-    address: "",
+    address: [""], // Initialize with an array
     role: "customer",
     isBanned: false,
   });
@@ -30,6 +30,30 @@ const EditUser = () => {
     setUserDetails((prevDetails) => ({
       ...prevDetails,
       [name]: value,
+    }));
+  };
+
+  const addressChangeHandler = (index, value) => {
+    const updatedAddresses = [...userDetails.address];
+    updatedAddresses[index] = value;
+    setUserDetails((prevDetails) => ({
+      ...prevDetails,
+      address: updatedAddresses,
+    }));
+  };
+
+  const addAddress = () => {
+    setUserDetails((prevDetails) => ({
+      ...prevDetails,
+      address: [...prevDetails.address, ""],
+    }));
+  };
+
+  const removeAddress = (index) => {
+    const updatedAddresses = userDetails.address.filter((_, i) => i !== index);
+    setUserDetails((prevDetails) => ({
+      ...prevDetails,
+      address: updatedAddresses,
     }));
   };
 
@@ -89,15 +113,25 @@ const EditUser = () => {
         />
       </div>
       <div className="mb-3">
-        <h4 className="bold-18 pb-2">Address:</h4>
-        <input
-          value={userDetails.address}
-          onChange={changeHandler}
-          type="text"
-          name="address"
-          placeholder="Type here.."
-          className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
-        />
+        <h4 className="bold-18 pb-2">Addresses:</h4>
+        {userDetails.address.map((addr, index) => (
+          <div key={index} className="flex items-center gap-x-4 mb-2">
+            <input
+              value={addr}
+              onChange={(e) => addressChangeHandler(index, e.target.value)}
+              type="text"
+              name={`address-${index}`}
+              placeholder="Type here.."
+              className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
+            />
+            <button onClick={() => removeAddress(index)} className="btn_dark_rounded flexCenter gap-x-1">
+              <MdRemove />
+            </button>
+          </div>
+        ))}
+        <button onClick={addAddress} className="btn_dark_rounded flexCenter gap-x-1">
+          <MdAdd /> Add Address
+        </button>
       </div>
       <div className="mb-3 flex items-center gap-x-4">
         <h4 className="bold-18 pb-2">User Role:</h4>

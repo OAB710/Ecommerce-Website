@@ -11,12 +11,14 @@
     "start": "concurrently \"npm run build-admin\" \"npm run build-frontend\" \"npm run build-backend\" \"npm run start-backend\""
   },
   "dependencies": {
+    "chart.js": "^4.4.7",
     "cors": "^2.8.5",
     "express": "^4.21.1",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.10.0",
     "mongoose": "^8.8.0",
     "multer": "^1.4.5-lts.1",
+    "react-chartjs-2": "^5.2.0",
     "redis": "^4.7.0"
   },
   "devDependencies": {

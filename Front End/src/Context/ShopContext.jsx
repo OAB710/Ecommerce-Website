@@ -78,7 +78,10 @@ const ShopContextProvider = (props) => {
         let itemInfo = all_products.find(
           (product) => product.id === Number(item)
         );
-        totalAmount += itemInfo.new_price * cartItems[item];
+        if (itemInfo) {
+          const price = itemInfo.new_price !== undefined ? itemInfo.new_price : 0;
+          totalAmount += price * cartItems[item];
+        }
       }
     }
     return totalAmount;

@@ -9,6 +9,9 @@ import Footer from "./components/Footer";
 import bannermens from "./assets/bannermens.png"
 import bannerwomens from "./assets/bannerwomens.png"
 import bannerkids from "./assets/bannerkids.png"
+import Men from "./pages/Men";
+import Women from "./pages/Women";
+import Kids from "./pages/Kids";
 export default function App() {
   return (
     <main className="bg-primary text-tertiary">
@@ -19,6 +22,9 @@ export default function App() {
           <Route path="/mens" element={<Category category="men" banner={bannermens} />}  />
           <Route path="/womens" element={<Category category="women" banner={bannerwomens} />} />
           <Route path="/kids" element={<Category category="kid" banner={bannerkids} />} />
+          <Route path="/men" element={<Men />} />
+          <Route path="/women" element={<Women />} />
+          <Route path="/kid" element={<Kids />} />
           <Route path="/product" element={<Product />}>
             <Route path=":productId" element={<Product />} />
           </Route>
