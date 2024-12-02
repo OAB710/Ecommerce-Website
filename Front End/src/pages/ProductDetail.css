@@ -1,0 +1,25 @@
+
+.product-detail {
+  display: flex;
+}
+
+.product-image {
+  flex: 1;
+  padding: 20px;
+}
+
+.product-info {
+  flex: 1;
+  padding: 20px;
+}
+
+.product-variants {
+  margin-top: 20px;
+}
+
+.variant {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}

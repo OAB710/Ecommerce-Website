@@ -124,7 +124,7 @@ const User = mongoose.model('User', {
     type: String,
   },
   address: {
-    type: String,
+    type: [String],
     required: true,
   },
   role: {
@@ -132,7 +132,11 @@ const User = mongoose.model('User', {
     enum: ['customer', 'admin'],
     default: 'customer',
   },
-  points: {
+  LoyaltyPoints: {
+    type: Number,
+    default: 0,
+  },
+  LoyaltyTicker: {
     type: Number,
     default: 0,
   },
@@ -243,6 +247,16 @@ const Order = mongoose.model('Order', {
 });
 
 app.post("/addproduct", async (req, res) => {
+  const { name, image, category, new_price, old_price, variants, date, available } = req.body;
+
+  if (!name || !image || !category || !new_price || !old_price) {
+    return res.status(400).json({ success: false, message: "All fields are required" });
+  }
+
+  if (isNaN(new_price) || isNaN(old_price)) {
+    return res.status(400).json({ success: false, message: "New price and old price must be numbers" });
+  }
+
   let products = await Product.find({});
   let id;
 
@@ -256,14 +270,14 @@ app.post("/addproduct", async (req, res) => {
 
   const product = new Product({
     id: id,
-    name: req.body.name,
-    image: req.body.image,
-    category: req.body.category,
-    new_price: req.body.new_price,
-    old_price: req.body.old_price,
-    variants: req.body.variants,
-    date: req.body.date,
-    available: req.body.available,
+    name: name,
+    image: image,
+    category: category,
+    new_price: new_price,
+    old_price: old_price,
+    variants: variants,
+    date: date,
+    available: available,
   });
 
   console.log(product);
@@ -272,7 +286,7 @@ app.post("/addproduct", async (req, res) => {
 
   res.json({
     success: true,
-    name: req.body.name, 
+    name: name, 
   });
 });
 app.post('/removeproduct', async (req, res) => {
@@ -300,9 +314,24 @@ app.post('/removeproduct', async (req, res) => {
 });
 
 app.get('/allproducts', async (req, res) => {
-  let products = await Product.find({});
-  console.log("All products fetched");
-  res.send(products);
+  const { page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
+
+  try {
+    const products = await Product.find({})
+      .skip(skip)
+      .limit(Number(limit));
+    const totalProducts = await Product.countDocuments();
+
+    res.json({
+      products,
+      totalPages: Math.ceil(totalProducts / limit),
+      currentPage: Number(page),
+    });
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    res.status(500).json({ success: false, message: "An error occurred while fetching products" });
+  }
 });
 // app.get('/allproducts', async (req, res) => {
 //   const cacheKey = 'all_products';
@@ -405,7 +434,15 @@ app.post('/login', async (req, res) => {
     res.json({ success: false, errors: "Wrong Email address" });
   }
 });
-
+app.get('/newcollections', async (req, res) => {
+  const { category } = req.query;
+  let query = {};
+  if (category) {
+    query.category = category;
+  }
+  let products = await Product.find(query).sort({ date: -1 }).limit(8);
+  res.json(products);
+});
 // creating endpoint for latestproducts
 app.get('/newcollections', async (req, res) => {
   let products = await Product.find({});
@@ -621,23 +658,28 @@ app.post('/addorder', async (req, res) => {
 });
 
 app.get('/allorders', async (req, res) => {
+  const { page = 1, limit = 20, sort = 'desc', startDate, endDate } = req.query;
+  const skip = (page - 1) * limit;
+  const query = {};
+
+  if (startDate && endDate) {
+    query.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
+  }
+
   try {
-    const { page = 1, limit = 20, sort = 'desc', startDate, endDate } = req.query;
-    const query = {};
-
-    if (startDate && endDate) {
-      query.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
-    }
-
     const orders = await Order.find(query)
       .populate('user', 'name')
       .sort({ date: sort === 'desc' ? -1 : 1 })
-      .skip((page - 1) * limit)
+      .skip(skip)
       .limit(Number(limit));
 
     const totalOrders = await Order.countDocuments(query);
 
-    res.json({ orders, totalOrders, totalPages: Math.ceil(totalOrders / limit) });
+    res.json({
+      orders,
+      totalPages: Math.ceil(totalOrders / limit),
+      currentPage: Number(page),
+    });
   } catch (error) {
     console.error("Error fetching orders:", error);
     res.status(500).json({ success: false, message: "An error occurred while fetching orders" });
@@ -681,10 +723,43 @@ app.listen(port, (error) => {
 });
 
 app.get('/dashboard-data', async (req, res) => {
-  const totalProducts = await Product.countDocuments();
-  res.json({
-    totalProducts,
-  });
+  try {
+    const totalProducts = await Product.countDocuments();
+    const totalUsers = await User.countDocuments();
+    const newUsers = await User.countDocuments({ date: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)) } });
+    const totalOrders = await Order.countDocuments();
+    const bestSellingProducts = await Order.aggregate([
+      { $unwind: "$products" },
+      { $group: { _id: "$products.product", totalSold: { $sum: "$products.quantity" } } },
+      { $sort: { totalSold: -1 } },
+      { $limit: 5 },
+      { $lookup: { from: "products", localField: "_id", foreignField: "_id", as: "product" } },
+      { $unwind: "$product" },
+      { $project: { _id: 1, totalSold: 1, name: "$product.name", image: "$product.image" } }
+    ]);
+
+    const productData = await Product.aggregate([
+      {
+        $group: {
+          _id: { year: { $year: "$date" }, month: { $month: "$date" } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+
+    res.json({
+      totalProducts,
+      totalUsers,
+      newUsers,
+      totalOrders,
+      bestSellingProducts,
+      productData
+    });
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error);
+    res.status(500).json({ success: false, message: "An error occurred while fetching dashboard data" });
+  }
 });
 
 const Coupons = mongoose.model('Coupons', {
@@ -716,15 +791,9 @@ app.get('/allcoupons', async (req, res) => {
   res.json(coupons);
 });
 
-app.post('/addcoupons', async (req, res) => {
-  const { code, discount, expirationDate } = req.body;
-  const coupon = new Coupons({ code, discount, expirationDate });
-  try {
-    await coupon.save();
-    res.json({ success: true });
-  } catch (error) {
-    res.json({ success: false, error: error.message });
-  }
+app.get('/allcoupons', async (req, res) => {
+  const coupons = await Coupons.find({});
+  res.json(coupons);
 });
 
 app.post('/removecoupon', async (req, res) => {
@@ -734,4 +803,64 @@ app.post('/removecoupon', async (req, res) => {
   res.json({
     success: true,
   });
+});
+app.get('/newcollections', async (req, res) => {
+  const { category } = req.query;
+  let query = {};
+  if (category) {
+    query.category = category;
+  }
+  let products = await Product.find(query).sort({ date: -1 }).limit(8);
+  res.json(products);
+});
+app.post('/addcoupon', async (req, res) => {
+  const { code, discount, expirationDate } = req.body;
+
+  try {
+    const newCoupon = new Coupons({
+      code,
+      discount,
+      expirationDate,
+    });
+
+    await newCoupon.save();
+    res.json({ success: true, message: "Coupon added successfully" });
+  } catch (error) {
+    console.error("Error adding coupon:", error);
+    res.status(500).json({ success: false, message: "An error occurred while adding the coupon" });
+  }
+});
+app.get('/revenue', async (req, res) => {
+  const { year } = req.query;
+  const startDate = new Date(year, 0, 1);
+  const endDate = new Date(year, 11, 31);
+
+  try {
+    const orders = await Order.aggregate([
+      {
+        $match: {
+          date: { $gte: startDate, $lte: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: "$date" },
+          totalRevenue: { $sum: "$total" },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    const revenueData = Array(12).fill(0);
+    orders.forEach((order) => {
+      revenueData[order._id - 1] = order.totalRevenue;
+    });
+
+    res.json(revenueData);
+  } catch (error) {
+    console.error("Error fetching revenue data:", error);
+    res.status(500).json({ success: false, message: "An error occurred while fetching revenue data" });
+  }
 });

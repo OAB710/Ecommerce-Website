@@ -1,78 +1,70 @@
-import { useState } from "react";
-import { MdAdd } from "react-icons/md";
+import React, { useState } from 'react';
 
 const AddCoupon = () => {
-  const [couponDetails, setCouponDetails] = useState({
-    code: "",
-    discount: "",
-    expirationDate: "",
-  });
+  const [code, setCode] = useState('');
+  const [discount, setDiscount] = useState('');
+  const [expirationDate, setExpirationDate] = useState('');
 
-  const changeHandler = (e) => {
-    setCouponDetails({ ...couponDetails, [e.target.name]: e.target.value });
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const addCoupon = async () => {
-    console.log(couponDetails);
-    let responseData;
-
-    await fetch('http://localhost:4000/addcoupons', {
+    const response = await fetch('http://localhost:4000/addcoupon', {
       method: 'POST',
       headers: {
-        Accept: 'application/json',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(couponDetails),
-    })
-    .then((resp) => resp.json())
-    .then((data) => {
-      responseData = data;
-      data.success ? alert('Coupon Added') : alert('Failed to Add Coupon');
+      body: JSON.stringify({ code, discount, expirationDate }),
     });
 
-    if (responseData.success) {
-      setCouponDetails({ code: "", discount: "", expirationDate: "" });
+    const data = await response.json();
+    if (data.success) {
+      alert('Coupon added successfully');
+      setCode('');
+      setDiscount('');
+      setExpirationDate('');
+    } else {
+      alert('Failed to add coupon');
     }
   };
 
   return (
     <div className="p-8 box-border bg-white w-full rounded-sm mt-4 lg:m-7">
-      <h2 className="bold-22 pb-4">Add Coupon</h2>
-      <div className="mb-3">
-        <h4 className="bold-18 pb-2">Coupon Code:</h4>
-        <input
-          value={couponDetails.code}
-          onChange={changeHandler}
-          type="text"
-          name="code"
-          placeholder="Type here.."
-          className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
-        />
-      </div>
-      <div className="mb-3">
-        <h4 className="bold-18 pb-2">Discount Value:</h4>
-        <input
-          value={couponDetails.discount}
-          onChange={changeHandler}
-          type="text"
-          name="discount"
-          placeholder="Type here.."
-          className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
-        />
-      </div>
-      <div className="mb-3">
-        <h4 className="bold-18 pb-2">Expiration Date:</h4>
-        <input
-          value={couponDetails.expirationDate}
-          onChange={changeHandler}
-          type="date"
-          name="expirationDate"
-          className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
-        />
-      </div>
-      <button onClick={addCoupon} className="btn_dark_rounded mt-4 flexCenter gap-x-1">
-        <MdAdd /> Add Coupon
-      </button>
+      <h4 className="bold-22 uppercase">Add Coupon</h4>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <label className="bold-18 pb-2">Coupon Code:</label>
+          <input
+            type="text"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label className="bold-18 pb-2">Discount:</label>
+          <input
+            type="number"
+            value={discount}
+            onChange={(e) => setDiscount(e.target.value)}
+            className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label className="bold-18 pb-2">Expiration Date:</label>
+          <input
+            type="date"
+            value={expirationDate}
+            onChange={(e) => setExpirationDate(e.target.value)}
+            className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
+            required
+          />
+        </div>
+        <button type="submit" className="btn_dark_rounded mt-4 flexCenter gap-x-1">
+          Add Coupon
+        </button>
+      </form>
     </div>
   );
 };

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { TbTrash } from "react-icons/tb";
+import newcouponIcon from "../assets/new-coupon.png"; // Add an icon for coupons
 
 const ListCoupon = () => {
   const [allCoupons, setAllCoupons] = useState([]);
@@ -30,7 +32,15 @@ const ListCoupon = () => {
 
   return (
     <div className="p-2 box-border bg-white mb-6 rounded-sm w-full mt-4 sm:p-4 sm:m-7">
-      <h4 className="bold-22 p-5 uppercase">Coupons List</h4>
+      <div className="flex justify-between items-center p-5">
+        <h4 className="bold-22 uppercase">Coupons List</h4>
+        <Link to="/addcoupon">
+          <button className="flexCenter gap-2 rounded-md bg-primary h-12 w-44 xs:w-44 medium-16">
+          <img src={newcouponIcon} alt="New Coupon " height={50} width={50} />
+            <span>Add Coupon</span>
+          </button>
+        </Link>
+      </div>
 
       <div className="max-h-[77vh] overflow-auto px-4 text-center">
         <table className="w-full mx-auto">

@@ -41,14 +41,53 @@ const ListOrder = () => {
     fetchOrders();
   };
 
+  const setDateRange = (range) => {
+    const now = new Date();
+    let startDate, endDate;
+
+    switch (range) {
+      case 'today':
+        startDate = new Date(now.setHours(0, 0, 0, 0));
+        endDate = new Date(now.setHours(23, 59, 59, 999));
+        break;
+      case 'yesterday':
+        startDate = new Date(now.setDate(now.getDate() - 1));
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(now.setHours(23, 59, 59, 999));
+        break;
+      case 'thisWeek':
+        startDate = new Date(now.setDate(now.getDate() - now.getDay()));
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(now.setDate(now.getDate() + (6 - now.getDay())));
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case 'thisMonth':
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      default:
+        startDate = '';
+        endDate = '';
+    }
+
+    setFilters({ startDate, endDate });
+    setPage(1);
+    fetchOrders();
+  };
+
   return (
     <div className="p-2 box-border bg-white mb-6 rounded-sm w-full mt-4 sm:p-4 sm:m-7">
       <div className="flex justify-between items-center p-5">
         <h4 className="bold-22 uppercase">Orders List</h4>
-        <div>
-          <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} />
-          <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} />
-          <button onClick={applyFilters}>Apply Filters</button>
+        <div className="flex gap-2">
+          <button className="btn_filter" onClick={() => setDateRange('today')}>Today</button>
+          <button className="btn_filter" onClick={() => setDateRange('yesterday')}>Yesterday</button>
+          <button className="btn_filter" onClick={() => setDateRange('thisWeek')}>This Week</button>
+          <button className="btn_filter" onClick={() => setDateRange('thisMonth')}>This Month</button>
+          <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="input_date" />
+          <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="input_date" />
+          <button className="btn_filter" onClick={applyFilters}>Apply Filters</button>
         </div>
       </div>
 
@@ -70,7 +109,9 @@ const ListOrder = () => {
                 <td>{order._id}</td>
                 <td>{order.user.name}</td>
                 <td>${order.total}</td>
-                <td>{order.status}</td>
+                <td className={order.status === "confirmed" ? "text-green-500" : order.status === "pending" ? "text-orange-500" : ""}>
+                  {order.status}
+                </td>
                 <td>{new Date(order.date).toLocaleDateString()}</td>
                 <td>
                   <button onClick={() => view_order(order._id)} className="text-blue-500 hover:text-blue-700 mr-2">

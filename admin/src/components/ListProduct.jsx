@@ -4,19 +4,23 @@ import upload_area from '../assets/addproduct.png';
 
 const ListProduct = () => {
   const [allProducts, setAllProducts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
 
-  const fetchInfo = async () => {
-    await fetch('http://localhost:4000/allproducts')
+  const fetchInfo = async (page) => {
+    const query = new URLSearchParams({ page, limit: 10 }).toString();
+    await fetch(`http://localhost:4000/allproducts?${query}`)
       .then((res) => res.json())
       .then((data) => {
-        setAllProducts(data);
+        setAllProducts(data.products);
+        setTotalPages(data.totalPages);
       });
   };
 
   useEffect(() => {
-    fetchInfo();
-  }, []);
+    fetchInfo(page);
+  }, [page]);
 
   const remove_product = async (id) => {
     const response = await fetch('http://localhost:4000/removeproduct', {
@@ -28,9 +32,8 @@ const ListProduct = () => {
       body: JSON.stringify({ id: id }),
     });
     const data = await response.json();
-    console.log(data); // Log the response to verify success
     if (data.success) {
-      await fetchInfo();
+      fetchInfo(page);
     } else {
       alert(data.message);
     }
@@ -55,7 +58,6 @@ const ListProduct = () => {
           </button>
         </Link>
       </div>
-
       <div className="max-h-[77vh] overflow-auto px-4 text-center">
         <table className="w-full mx-auto">
           <thead>
@@ -75,7 +77,7 @@ const ListProduct = () => {
           </thead>
           <tbody>
             {allProducts.map((product, i) => (
-              <tr key={i} className="border-b border-slate-900/20 text-gray-20 p-6 medium-14" style={{ height: '3em' }}>
+              <tr key={i} className="border-b border-slate-900/20 text-gray-20 p-6 medium-14" style={{ height: '6em' }}>
                 <td className="flexStart sm:flexCenter">
                   <img
                     src={product.image}
@@ -95,7 +97,7 @@ const ListProduct = () => {
                 <td>{product.variants.map(variant => variant.color).join(', ')}</td>
                 <td>{calculateTotalQuantity(product.variants)}</td>
                 <td>{new Date(product.date).toLocaleDateString()}</td>
-                <td>{product.available ? "Yes" : "No"}</td>
+                <td className={product.available ? "text-green-500" : ""}>{product.available ? "Yes" : "No"}</td>
                 <td>
                   <button
                     onClick={() => edit_product(product.id)}
@@ -114,6 +116,11 @@ const ListProduct = () => {
             ))}
           </tbody>
         </table>
+        <div className="flex justify-between mt-4">
+          <button onClick={() => setPage(page - 1)} disabled={page === 1}>Previous</button>
+          <span>Page {page} of {totalPages}</span>
+          <button onClick={() => setPage(page + 1)} disabled={page === totalPages}>Next</button>
+        </div>
       </div>
     </div>
   );
