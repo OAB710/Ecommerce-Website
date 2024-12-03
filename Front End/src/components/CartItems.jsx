@@ -53,7 +53,12 @@ const CartItems = () => {
           })}
         </tbody>
       </table>
-      <div className="flex flex-col gap-20 my-16 p-8 md:flex-row rounded-md bg-white w-full max-w-[666px]">
+      
+      <div className="max-w-6xl mx-auto p-4 bg-white shadow-md">
+        <div className="flex flex-col md:flex-row justify-between">
+          <div className="w-full md:w-1/2 p-4">
+            <h2 className="text-xl font-bold mb-4">CHI TIẾT ĐƠN HÀNG</h2>
+            <div className="flex flex-col gap-20 my-16 p-8 md:flex-row rounded-md bg-white w-full max-w-[666px]">
         <div className="flex flex-col gap-10">
           <h4 className="bold-20">Summary</h4>
           <div>
@@ -85,6 +90,49 @@ const CartItems = () => {
               />
               <button className="btn_dark_rounded">Submit</button>
             </div>
+          </div>
+        </div>
+      </div>
+
+          </div>
+          <div className="w-full md:w-1/2 p-4 bg-white">
+            <h2 className="text-xl font-bold mb-4">NGƯỜI NHẬN HÀNG</h2>
+            <form>
+              <div className="mb-4">
+                <label className="block mb-2">Tên</label>
+                <input type="text" className="w-full p-2 border border-gray-300" value="Dutch" />
+              </div>
+              <div className="mb-4">
+                <label className="block mb-2">Điện thoại liên lạc</label>
+                <input type="text" className="w-full p-2 border border-gray-300" value="0123456789" />
+              </div>
+              <div className="mb-4">
+                <label className="block mb-2">Địa chỉ</label>
+                <input type="text" className="w-full p-2 border border-gray-300" value="Địa chỉ mặc định" />
+              </div>
+              <div className="mb-4">
+                <label className="block mb-2">Địa chỉ cụ thể</label>
+                <input type="text" className="w-full p-2 border border-gray-300" value="TPHCM" />
+              </div>
+              <div className="mb-4">
+                <label className="block mb-2">Ghi chú</label> <textarea className="w-full p-2 border border-gray-300"></textarea>
+              </div>
+              <div className="mb-4">
+                <label className="block mb-2">Phương thức thanh toán</label>
+                <div className="flex items-center mb-2">
+                  <input type="radio" name="payment" className="mr-2" checked />
+                  <label>Thanh toán khi nhận hàng (COD)</label>
+                </div>
+                <div className="flex items-center">
+                  <input type="radio" name="payment" className="mr-2" />
+                  <label>Thanh toán bằng ví MoMo</label>
+                </div>
+              </div>
+              <div className="flex flex-col md:flex-row">
+                <button className="w-full md:w-auto bg-teal-500 text-white p-2 mb-2 md:mb-0 md:mr-2">ĐẶT HÀNG: GIAO HÀNG VÀ THU TIỀN TẬN NƠI</button>
+                <button className="w-full md:w-auto bg-yellow-500 text-white p-2">CẦN SẢN PHẨM KHÁC? CHỌN THÊM...</button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
