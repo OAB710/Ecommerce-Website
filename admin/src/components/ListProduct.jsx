@@ -47,6 +47,10 @@ const ListProduct = () => {
     return variants.reduce((total, variant) => total + variant.quantity, 0);
   };
 
+  const formatPrice = (price) => {
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "đ";
+  };
+
   return (
     <div className="p-2 box-border bg-white mb-6 rounded-sm w-full mt-4 sm:p-4 sm:m-7">
       <div className="flex justify-between items-center p-5">
@@ -72,6 +76,7 @@ const ListProduct = () => {
               <th className="p-2">Quantity</th>
               <th className="p-2">Date</th>
               <th className="p-2">Available</th>
+              <th className="p-2">Tags</th>
               <th className="p-2">Action</th>
             </tr>
           </thead>
@@ -90,14 +95,15 @@ const ListProduct = () => {
                 <td>
                   <div className="line-clamp-3">{product.name}</div>
                 </td>
-                <td>${product.old_price}</td>
-                <td>${product.new_price}</td>
+                <td>{formatPrice(product.old_price)}</td>
+                <td>{formatPrice(product.new_price)}</td>
                 <td>{product.category}</td>
                 <td>{product.variants.map(variant => variant.size).join(', ')}</td>
                 <td>{product.variants.map(variant => variant.color).join(', ')}</td>
                 <td>{calculateTotalQuantity(product.variants)}</td>
                 <td>{new Date(product.date).toLocaleDateString()}</td>
                 <td className={product.available ? "text-green-500" : ""}>{product.available ? "Yes" : "No"}</td>
+                <td>{product.tags.join(', ')}</td>
                 <td>
                   <button
                     onClick={() => edit_product(product.id)}

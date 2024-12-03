@@ -13,6 +13,7 @@ const EditUser = () => {
     role: "customer",
     isBanned: false,
   });
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     // Fetch user details
@@ -57,7 +58,25 @@ const EditUser = () => {
     }));
   };
 
+  const validate = () => {
+    const newErrors = {};
+    if (userDetails.email && !/\S+@\S+\.\S+/.test(userDetails.email)) {
+      newErrors.email = "Invalid email format";
+    }
+    if (!userDetails.phone) {
+      newErrors.phone = "Phone number is required";
+    } else if (!/^\d+$/.test(userDetails.phone)) {
+      newErrors.phone = "Phone number must contain only digits";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const saveUser = async () => {
+    if (!validate()) {
+      return;
+    }
+
     await fetch(`http://localhost:4000/edituser/${userId}`, {
       method: "POST",
       headers: {
@@ -72,13 +91,14 @@ const EditUser = () => {
           alert("User updated successfully");
           navigate("/listuser");
         } else {
-          alert("Update failed");
+          setErrors({ ...errors, general: data.message });
         }
       });
   };
 
   return (
     <div className="p-8 box-border bg-white w-full rounded-sm mt-4 lg:m-7">
+      {errors.general && <div className="text-red-500 mb-4">{errors.general}</div>}
       <div className="mb-3">
         <h4 className="bold-18 pb-2">User Name:</h4>
         <input
@@ -100,6 +120,7 @@ const EditUser = () => {
           placeholder="Type here.."
           className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
         />
+        {errors.email && <div className="text-red-500">{errors.email}</div>}
       </div>
       <div className="mb-3">
         <h4 className="bold-18 pb-2">Phone:</h4>
@@ -111,6 +132,7 @@ const EditUser = () => {
           placeholder="Type here.."
           className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
         />
+        {errors.phone && <div className="text-red-500">{errors.phone}</div>}
       </div>
       <div className="mb-3">
         <h4 className="bold-18 pb-2">Addresses:</h4>

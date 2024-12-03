@@ -38,6 +38,10 @@ const ViewOrder = () => {
       });
   };
 
+  const formatPrice = (price) => {
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "đ";
+  };
+
   if (!orderDetails) {
     return <div>Not found...</div>;
   }
@@ -55,7 +59,7 @@ const ViewOrder = () => {
       </div>
       <div className="mb-3">
         <h4 className="bold-18 pb-2">Total Amount:</h4>
-        <p>${orderDetails.total}</p>
+        <p>{formatPrice(orderDetails.total)}</p>
       </div>
       <div className="mb-3">
         <h4 className="bold-18 pb-2">Order Status:</h4>
@@ -74,7 +78,7 @@ const ViewOrder = () => {
         <ul>
           {orderDetails.products.map((product, index) => (
             <li key={index}>
-              {product.product.name} - {product.quantity} x ${product.price}
+              {product.product.name} - {product.quantity} x {formatPrice(product.price)}
             </li>
           ))}
         </ul>

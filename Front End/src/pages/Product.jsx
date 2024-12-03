@@ -14,7 +14,9 @@ const Product = () => {
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
-
+  const formatPrice = (price) => {
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "đ";
+  };
   useEffect(() => {
     // Fetch product details
     const fetchProductDetails = async () => {
@@ -66,8 +68,8 @@ const Product = () => {
               <p>(111)</p>
             </div>
             <div className="flex gap-x-6 medium-20 my-4">
-              <div className="line-through">${product.old_price}</div>
-              <div className="text-secondary">${product.new_price}</div>
+              <div className="line-through">{formatPrice(product.old_price)}</div>
+              <div className="text-secondary">{formatPrice(product.new_price)}</div>
             </div>
             <div className="mb-4">
               <h4 className="bold-16">Select Color:</h4>
@@ -120,6 +122,24 @@ const Product = () => {
             <p><span className="medium-16 text-tertiary">Category:</span> {product.category}</p>
             <p><span className="medium-16 text-tertiary">Tags:</span> Modern | Latest</p>
           </div>
+        </div>
+        {/* Reviews Section */}
+        <div className="mt-10">
+          <h3 className="h3">Reviews</h3>
+          <div className="flex gap-4 mt-4">
+            <img src={product_rt_1} alt="reviewer" className="w-16 h-16 rounded-full" />
+            <div>
+              <div className="flex gap-x-2 text-secondary medium-22">
+                <MdStar />
+                <MdStar />
+                <MdStar />
+                <MdStar />
+                <MdStar />
+              </div>
+              <p className="mt-2">This is a sample review comment. The product is excellent and meets all my expectations.</p>
+            </div>
+          </div>
+          {/* Add more reviews as needed */}
         </div>
       </div>
     </section>
