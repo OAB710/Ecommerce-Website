@@ -20,7 +20,9 @@ const Product = () => {
   useEffect(() => {
     // Fetch product details
     const fetchProductDetails = async () => {
-      const response = await fetch(`http://localhost:4000/product/${productId}`);
+      const response = await fetch(
+        `http://localhost:4000/product/${productId}`
+      );
       const data = await response.json();
       setProduct(data);
     };
@@ -32,9 +34,18 @@ const Product = () => {
     return <div>Product not found!</div>;
   }
 
+  // const handleAddToCart = () => {
+  //   if (selectedColor && selectedSize) {
+  //     addToCart(product.id, selectedColor, selectedSize, quantity);
+  //   } else {
+  //     alert("Please select color and size.");
+  //   }
+  // };
+
   const handleAddToCart = () => {
     if (selectedColor && selectedSize) {
-      addToCart(product.id, selectedColor, selectedSize, quantity);
+      const variant = { size: selectedSize, color: selectedColor };
+      addToCart(product.id, variant, quantity);
     } else {
       alert("Please select color and size.");
     }
@@ -42,21 +53,42 @@ const Product = () => {
 
   return (
     <section className="max_padd_container py-28">
-      <div >
+      <div>
         <div className="flex flex-col gap-14 xl:flex-row">
           {/* left side */}
           <div className="flex gap-x-2 xl:flex-1">
             <div className="flex flex-col gap-[7px] flex-wrap">
-              <img src={product_rt_1} alt="productImg" className="max-h-[99px]" />
-              <img src={product_rt_2} alt="productImg" className="max-h-[99px]" />
-              <img src={product_rt_3} alt="productImg" className="max-h-[99px]" />
-              <img src={product_rt_4} alt="productImg" className="max-h-[99px]" />
+              <img
+                src={product_rt_1}
+                alt="productImg"
+                className="max-h-[99px]"
+              />
+              <img
+                src={product_rt_2}
+                alt="productImg"
+                className="max-h-[99px]"
+              />
+              <img
+                src={product_rt_3}
+                alt="productImg"
+                className="max-h-[99px]"
+              />
+              <img
+                src={product_rt_4}
+                alt="productImg"
+                className="max-h-[99px]"
+              />
             </div>
             <div>
-              <img src={product.image} alt={product.name} style={{ width: '416.95px', height: '400px' }} className="w-full h-auto max-h-full" />
+              <img
+                src={product.image}
+                alt={product.name}
+                style={{ width: "416.9px", height: "400px" }}
+                className="w-full h-auto max-h-full"
+              />
             </div>
           </div>
-          
+
           {/* right side */}
           <div className="flex-col flex xl:flex-[1.7]">
             <h3 className="h3">{product.name}</h3>
@@ -68,8 +100,12 @@ const Product = () => {
               <p>(111)</p>
             </div>
             <div className="flex gap-x-6 medium-20 my-4">
-              <div className="line-through">{formatPrice(product.old_price)}</div>
-              <div className="text-secondary">{formatPrice(product.new_price)}</div>
+              <div className="line-through">
+                {formatPrice(product.old_price)}
+              </div>
+              <div className="text-secondary">
+                {formatPrice(product.new_price)}
+              </div>
             </div>
             <div className="mb-4">
               <h4 className="bold-16">Select Color:</h4>
@@ -112,22 +148,35 @@ const Product = () => {
               />
             </div>
             <div className="flex gap-3">
-              <button onClick={handleAddToCart} className="btn_dark_rounded !rounded-none uppercase regular-14 tracking-widest">
+              <button
+                onClick={handleAddToCart}
+                className="btn_dark_rounded !rounded-none uppercase regular-14 tracking-widest"
+              >
                 Add to cart
               </button>
               <button className="btn_dark_rounded !rounded-none uppercase regular-14 tracking-widest">
                 Buy it now
               </button>
             </div>
-            <p><span className="medium-16 text-tertiary">Category:</span> {product.category}</p>
-            <p><span className="medium-16 text-tertiary">Tags:</span> Modern | Latest</p>
+            <p>
+              <span className="medium-16 text-tertiary">Category:</span>{" "}
+              {product.category}
+            </p>
+            <p>
+              <span className="medium-16 text-tertiary">Tags:</span> Modern |
+              Latest
+            </p>
           </div>
         </div>
         {/* Reviews Section */}
         <div className="mt-10">
           <h3 className="h3">Reviews</h3>
           <div className="flex gap-4 mt-4">
-            <img src={product_rt_1} alt="reviewer" className="w-16 h-16 rounded-full" />
+            <img
+              src={product_rt_1}
+              alt="reviewer"
+              className="w-16 h-16 rounded-full"
+            />
             <div>
               <div className="flex gap-x-2 text-secondary medium-22">
                 <MdStar />
@@ -136,7 +185,10 @@ const Product = () => {
                 <MdStar />
                 <MdStar />
               </div>
-              <p className="mt-2">This is a sample review comment. The product is excellent and meets all my expectations.</p>
+              <p className="mt-2">
+                This is a sample review comment. The product is excellent and
+                meets all my expectations.
+              </p>
             </div>
           </div>
           {/* Add more reviews as needed */}

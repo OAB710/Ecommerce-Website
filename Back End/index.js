@@ -15,7 +15,7 @@ const cors = require("cors");
 
 const username = encodeURIComponent("binhquyen");
 const password = encodeURIComponent("123");
-const database = encodeURIComponent("estore");
+const database = encodeURIComponent("estore1");
 
 app.use(express.json());
 app.use(cors());
@@ -148,6 +148,10 @@ const User = mongoose.model('User', {
   isBanned: {
     type: Boolean,
     default: false,
+  },
+  cartData: {
+    type: Object,
+    default: {},
   },
 });
 //Category
@@ -393,38 +397,83 @@ app.get('/allproducts', async (req, res) => {
 // });
 
 // Creating endpoint for registering the user
+// app.post('/signup', async (req, res) => {
+//   let check = await User.findOne({ email: req.body.email });
+//   if (check) {
+//     return res.status(400).json({ 
+//       success: false, 
+//       errors: "Existing user found with same email address" 
+//     });
+//   }
+
+//   let cart = {};
+//   for (let i = 0; i < 300; i++) {
+//     cart[i] = 0;
+//   }
+
+//   const user = new User({
+//     name: req.body.username,
+//     email: req.body.email,
+//     password: req.body.password, 
+//     cartData: cart,
+//   });
+
+//   await user.save();
+
+//   const data = {
+//     user: {
+//       id: user._id // Use user._id to access the user's ID
+//     }
+//   };
+  
+//   const token = jwt.sign(data, 'secret_ecom'); 
+  
+//   res.json({ success: true, token });
+// });
+
 app.post('/signup', async (req, res) => {
-  let check = await User.findOne({ email: req.body.email });
-  if (check) {
-    return res.status(400).json({ 
-      success: false, 
-      errors: "Existing user found with same email address" 
-    });
-  }
-
-  let cart = {};
-  for (let i = 0; i < 300; i++) {
-    cart[i] = 0;
-  }
-
-  const user = new User({
-    name: req.body.username,
-    email: req.body.email,
-    password: req.body.password, 
-    cartData: cart,
-  });
-
-  await user.save();
-
-  const data = {
-    user: {
-      id: user._id // Use user._id to access the user's ID
+  try {
+    // Kiểm tra xem email đã tồn tại chưa
+    let check = await User.findOne({ email: req.body.email });
+    if (check) {
+      return res.status(400).json({ 
+        success: false, 
+        errors: "Existing user found with same email address" 
+      });
     }
-  };
-  
-  const token = jwt.sign(data, 'secret_ecom'); 
-  
-  res.json({ success: true, token });
+
+    // Tạo người dùng mới với dữ liệu từ yêu cầu
+    const user = new User({
+      name: req.body.username,
+      email: req.body.email,
+      password: req.body.password,
+      phone: req.body.phone,
+      address: req.body.address,
+      role: req.body.role || 'customer', // Mặc định là 'customer' nếu không có role
+      LoyaltyPoints: req.body.LoyaltyPoints || 0,
+      LoyaltyTicker: req.body.LoyaltyTicker || 0,
+      isBanned: req.body.isBanned || false,
+      cartData: {} // Khởi tạo cartData như một đối tượng rỗng
+    });
+
+    // Lưu người dùng mới vào cơ sở dữ liệu
+    await user.save();
+
+    // Tạo token JWT cho người dùng
+    const data = {
+      user: {
+        id: user._id // Sử dụng user._id để truy cập ID của người dùng
+      }
+    };
+    
+    const token = jwt.sign(data, 'secret_ecom'); 
+    
+    // Trả về phản hồi thành công với token
+    res.json({ success: true, token });
+  } catch (error) {
+    console.error("Error during signup:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 });
 
 // Creating endpoint for user login
@@ -526,49 +575,135 @@ const fetchUser = async (req, res, next) => {
 };
 
 // creating endpoint for adding products in cartdata
+// app.post('/addtocart', fetchUser, async (req, res) => {
+//   let userData = await User.findOne({ _id: req.user.id });
+//   if (userData) {
+//     userData.cartData[req.body.itemId] += 1;
+//     await User.findOneAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
+//     res.json("Added");
+//   } else {
+//     // Handle the case where no user is found
+//     res.status(404).json({ error: 'User not found' });
+//   }
+// });
+
 app.post('/addtocart', fetchUser, async (req, res) => {
-  let userData = await User.findOne({ _id: req.user.id });
-  if (userData) {
-    userData.cartData[req.body.itemId] += 1;
-    await User.findOneAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
-    res.json("Added");
-  } else {
-    // Handle the case where no user is found
-    res.status(404).json({ error: 'User not found' });
+  const { productId, variant, quantity } = req.body;
+  if (!productId || !variant || !quantity) {
+    return res.status(400).json({
+      success: false,
+      message: "Product ID, variant, and quantity are required",
+    });
+  }
+
+  try {
+    const userData = await User.findById(req.user.id);
+    if (userData) {
+      if (!userData.cartData) {
+        userData.cartData = {};
+      }
+
+      const cartKey = `${productId}_${variant.size}_${variant.color}`;
+      // Ensure quantity is treated as a number
+      const currentQuantity = Number(userData.cartData[cartKey] || 0);
+      const newQuantity = Number(quantity);
+
+      // Update the quantity directly
+      userData.cartData[cartKey] = currentQuantity + newQuantity;
+
+      userData.markModified('cartData');
+
+      await userData.save();
+      res.json({ success: true, message: "Added to cart", cartData: userData.cartData });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+  } catch (error) {
+    console.error("Error adding to cart:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 });
 
 // creating endpoint for removing cartData
-app.post('/removefromcart', fetchUser, async (req, res) => {
-  console.log("Removed", req.body.itemId);
+// app.post('/removefromcart', fetchUser, async (req, res) => {
+//   console.log("Removed", req.body.itemId);
 
-  let userData = await User.findOne({ _id: req.user.id 
- });
+//   let userData = await User.findOne({ _id: req.user.id 
+//  });
 
-  if (userData && userData.cartData) { // Check if userData and cartData exist
-    if (userData.cartData[req.body.itemId] > 0) {
-      userData.cartData[req.body.itemId] -= 1;
-      await User.findOneAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
-    } 
-    res.send("Removed"); 
+//   if (userData && userData.cartData) { // Check if userData and cartData exist
+//     if (userData.cartData[req.body.itemId] > 0) {
+//       userData.cartData[req.body.itemId] -= 1;
+//       await User.findOneAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
+//     } 
+//     res.send("Removed"); 
  
-  } else {
-    // Handle the case where no user or cartData is found
-    res.status(404).json({ error: 'User or cart data not found' });
+//   } else {
+//     // Handle the case where no user or cartData is found
+//     res.status(404).json({ error: 'User or cart data not found' });
+//   }
+
+// });
+
+app.post('/removefromcart', fetchUser, async (req, res) => {
+  const { productId, variant, quantity } = req.body;
+  if (!productId || !variant || !quantity) {
+    return res.status(400).json({ success: false, message: "Product ID, variant, and quantity are required" });
   }
 
+  try {
+    const userData = await User.findOne({ _id: req.user.id });
+    if (userData && userData.cartData) {
+      const cartKey = `${productId}_${variant.size}_${variant.color}`;
+      if (userData.cartData[cartKey] && userData.cartData[cartKey] > 0) {
+        userData.cartData[cartKey] -= quantity;
+        if (userData.cartData[cartKey] <= 0) {
+          delete userData.cartData[cartKey];
+        }
+        await userData.save();
+        res.json({ success: true, message: "Removed from cart" });
+      } else {
+        res.status(400).json({ success: false, message: "Item not in cart or invalid quantity" });
+      }
+    } else {
+      res.status(404).json({ success: false, message: "User or cart data not found" });
+    }
+  } catch (error) {
+    console.error("Error removing from cart:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 });
 
+// app.post('/getcart', fetchUser, async (req, res) => {
+//   console.log('Get cart');
+
+//   let userData = await User.findOne({ _id: req.user.id });
+
+//   if (userData && userData.cartData) { // Check if userData and cartData exist
+//     res.json(userData.cartData); 
+//   } else {
+//     // Handle the case where no user or cartData is found
+//     res.status(404).json({ error: 'User or cart data not found' }); 
+//   }
+// });
+
 app.post('/getcart', fetchUser, async (req, res) => {
-  console.log('Get cart');
-
-  let userData = await User.findOne({ _id: req.user.id });
-
-  if (userData && userData.cartData) { // Check if userData and cartData exist
-    res.json(userData.cartData); 
-  } else {
-    // Handle the case where no user or cartData is found
-    res.status(404).json({ error: 'User or cart data not found' }); 
+  try {
+    const userData = await User.findOne({ _id: req.user.id });
+    if (userData && userData.cartData) {
+      res.json(userData.cartData);
+    } else {
+      res.status(404).json({ success: false, message: "User or cart data not found" });
+    }
+  } catch (error) {
+    console.error("Error fetching cart:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
 
