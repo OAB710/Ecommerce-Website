@@ -80,6 +80,10 @@ const Product = mongoose.model("Product", {
     type: Number,
     required: true,
   },
+  tags: {
+    type: [String],
+    required: true,
+  },
   variants: [
     {
       color: {
@@ -122,6 +126,7 @@ const User = mongoose.model('User', {
   },
   phone: {
     type: String,
+    unique: true,
   },
   address: {
     type: [String],
@@ -167,14 +172,25 @@ const Review = mongoose.model('Review', {
     type: String,
     required: true,
   },
-  rating: {
+  rating: { 
     type: Number,
     required: true,
+    min: 1, // Minimum value of 1
+    max: 5, // Maximum value of 5
   },
   date: {
     type: Date,
     default: Date.now,
   },
+  images: {
+    type: [String],
+    validate: {
+      validator: function(v) {
+        return v.length <= 4;
+      },
+      message: props => `A review can have a maximum of 4 images, but ${props.value.length} were provided.`
+    }
+  }
 });
 //cart
 const Cart = mongoose.model('Cart', {
@@ -280,14 +296,13 @@ app.post("/addproduct", async (req, res) => {
     available: available,
   });
 
-  console.log(product);
-  await product.save();
-  console.log("Saved");
-
-  res.json({
-    success: true,
-    name: name, 
-  });
+  try {
+    await product.save();
+    res.json({ success: true, message: "Product added successfully" });
+  } catch (error) {
+    console.error("Error adding product:", error);
+    res.status(500).json({ success: false, message: "An error occurred while adding the product" });
+  }
 });
 app.post('/removeproduct', async (req, res) => {
   try {
@@ -603,7 +618,7 @@ app.post('/edituser/:id', async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true }
+      { new: true, runValidators: true }
     );
     if (updatedUser) {
       res.json({ success: true, message: "User updated successfully" });
@@ -611,8 +626,13 @@ app.post('/edituser/:id', async (req, res) => {
       res.status(404).json({ success: false, message: "User not found" });
     }
   } catch (error) {
-    console.error("Error updating user:", error);
-    res.status(500).json({ success: false, message: "An error occurred while updating the user" });
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      res.status(400).json({ success: false, message: `${field.charAt(0).toUpperCase() + field.slice(1)} already exists` });
+    } else {
+      console.error("Error updating user:", error);
+      res.status(500).json({ success: false, message: "An error occurred while updating the user" });
+    }
   }
 });
 
@@ -862,5 +882,48 @@ app.get('/revenue', async (req, res) => {
   } catch (error) {
     console.error("Error fetching revenue data:", error);
     res.status(500).json({ success: false, message: "An error occurred while fetching revenue data" });
+  }
+});
+app.get('/order-stats', async (req, res) => {
+  const { year } = req.query;
+  const startDate = new Date(year, 0, 1);
+  const endDate = new Date(year, 11, 31);
+
+  try {
+    const orders = await Order.aggregate([
+      {
+        $match: {
+          date: { $gte: startDate, $lte: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: "$date" },
+          totalOrders: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    const orderData = Array(12).fill(0);
+    orders.forEach((order) => {
+      orderData[order._id - 1] = order.totalOrders;
+    });
+
+    res.json(orderData);
+  } catch (error) {
+    console.error("Error fetching order data:", error);
+    res.status(500).json({ success: false, message: "An error occurred while fetching order data" });
+  }
+});
+app.get('/reviews/:productId', async (req, res) => {
+  try {
+    const reviews = await Review.find({ product: req.params.productId }).populate('user', 'name');
+    res.json(reviews);
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    res.status(500).json({ success: false, message: "An error occurred while fetching reviews" });
   }
 });

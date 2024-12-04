@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import upload_area from "../assets/upload_area.svg";
-import { MdSave } from "react-icons/md";
+import { MdSave, MdAdd, MdRemove } from "react-icons/md";
 
 const EditProduct = () => {
   const { productId } = useParams();
@@ -15,6 +15,7 @@ const EditProduct = () => {
     old_price: "",
     variants: [],
     available: true,
+    tags: [], // Initialize tags as an empty array
   });
 
   useEffect(() => {
@@ -52,6 +53,28 @@ const EditProduct = () => {
   const removeVariant = (index) => {
     const updatedVariants = productDetails.variants.filter((_, i) => i !== index);
     setProductDetails({ ...productDetails, variants: updatedVariants });
+  };
+
+  const addTag = () => {
+    setProductDetails({
+      ...productDetails,
+      tags: [...productDetails.tags, ""],
+    });
+  };
+
+  const removeTag = (index) => {
+    const updatedTags = productDetails.tags.filter((_, i) => i !== index);
+    setProductDetails({ ...productDetails, tags: updatedTags });
+  };
+
+  const tagChangeHandler = (index, value) => {
+    const updatedTags = [...productDetails.tags];
+    updatedTags[index] = value;
+    setProductDetails({ ...productDetails, tags: updatedTags });
+  };
+
+  const formatPrice = (price) => {
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "đ";
   };
 
   const saveProduct = async () => {
@@ -180,12 +203,33 @@ const EditProduct = () => {
               className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
             />
             <button onClick={() => removeVariant(index)} className="btn_dark_rounded flexCenter gap-x-1">
-              Remove
+              <MdRemove />
             </button>
           </div>
         ))}
         <button onClick={addVariant} className="btn_dark_rounded flexCenter gap-x-1">
-          Add Variant
+          <MdAdd /> Add Variant
+        </button>
+      </div>
+      <div className="mb-3">
+        <h4 className="bold-18 pb-2">Tags:</h4>
+        {productDetails.tags.map((tag, index) => (
+          <div key={index} className="mb-3 flex items-center gap-x-4">
+            <input
+              value={tag}
+              onChange={(e) => tagChangeHandler(index, e.target.value)}
+              type="text"
+              name={`tag-${index}`}
+              placeholder="Tag"
+              className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
+            />
+            <button onClick={() => removeTag(index)} className="btn_dark_rounded flexCenter gap-x-1">
+              <MdRemove />
+            </button>
+          </div>
+        ))}
+        <button onClick={addTag} className="btn_dark_rounded flexCenter gap-x-1">
+          <MdAdd /> Add Tag
         </button>
       </div>
       <div className="mb-3 flex items-center gap-x-4">

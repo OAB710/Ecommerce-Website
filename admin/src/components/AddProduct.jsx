@@ -14,7 +14,9 @@ const AddProduct = () => {
     old_price: "",
     variants: [],
     available: true,
+    tags: [], // Initialize tags as an empty array
   });
+  const [errorMessage, setErrorMessage] = useState("");
 
   const imageHandler = (e) => {
     setImage(e.target.files[0]);
@@ -40,6 +42,24 @@ const AddProduct = () => {
   const removeVariant = (index) => {
     const updatedVariants = productDetails.variants.filter((_, i) => i !== index);
     setProductDetails({ ...productDetails, variants: updatedVariants });
+  };
+
+  const addTag = () => {
+    setProductDetails({
+      ...productDetails,
+      tags: [...productDetails.tags, ""],
+    });
+  };
+
+  const removeTag = (index) => {
+    const updatedTags = productDetails.tags.filter((_, i) => i !== index);
+    setProductDetails({ ...productDetails, tags: updatedTags });
+  };
+
+  const tagChangeHandler = (index, value) => {
+    const updatedTags = [...productDetails.tags];
+    updatedTags[index] = value;
+    setProductDetails({ ...productDetails, tags: updatedTags });
   };
 
   const saveProduct = async () => {
@@ -79,13 +99,14 @@ const AddProduct = () => {
           alert("Product added successfully");
           navigate("/listproduct");
         } else {
-          alert("Add product failed");
+          setErrorMessage(data.message);
         }
       });
   };
 
   return (
     <div className="p-8 box-border bg-white w-full rounded-sm mt-4 lg:m-7">
+      {errorMessage && <div className="text-red-500 mb-4">{errorMessage}</div>}
       <div className="mb-3">
         <h4 className="bold-18 pb-2">Product title:</h4>
         <input
@@ -176,6 +197,27 @@ const AddProduct = () => {
           Add Variant
         </button>
       </div>
+      <div className="mb-3">
+        <h4 className="bold-18 pb-2">Tags:</h4>
+        {productDetails.tags.map((tag, index) => (
+          <div key={index} className="mb-3 flex items-center gap-x-4">
+            <input
+              value={tag}
+              onChange={(e) => tagChangeHandler(index, e.target.value)}
+              type="text"
+              name={`tag-${index}`}
+              placeholder="Tag"
+              className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
+            />
+            <button onClick={() => removeTag(index)} className="btn_dark_rounded flexCenter gap-x-1">
+              Remove
+            </button>
+          </div>
+        ))}
+        <button onClick={addTag} className="btn_dark_rounded flexCenter gap-x-1">
+          Add Tag
+        </button>
+      </div>
       <div className="mb-3 flex items-center gap-x-4">
         <h4 className="bold-18 pb-2">Available:</h4>
         <select
@@ -212,6 +254,7 @@ const AddProduct = () => {
       <button onClick={saveProduct} className="btn_dark_rounded mt-4 flexCenter gap-x-1">
         <MdSave /> Save Product
       </button>
+      {errorMessage && <div className="text-red-500 font-bold mt-4">{errorMessage}</div>}
     </div>
   );
 };
