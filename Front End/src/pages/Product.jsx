@@ -53,7 +53,7 @@ const Product = () => {
               <img src={product_rt_4} alt="productImg" className="max-h-[99px]" />
             </div>
             <div>
-              <img src={product.image} alt={product.name} style={{ width: '400px', height: '400px' }} className="w-full h-auto max-h-full" />
+              <img src={product.image} alt={product.name} style={{ width: '416.95px', height: '400px' }} className="w-full h-auto max-h-full" />
             </div>
           </div>
           
