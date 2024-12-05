@@ -3,8 +3,13 @@ import { ShopContext } from "../Context/ShopContext";
 import { TbTrash } from "react-icons/tb";
 
 const CartItems = () => {
-  const { all_products, cartItems, removeFromCart, getTotalCartAmount } =
-    useContext(ShopContext);
+  const {
+    all_products,
+    cartItems,
+    removeFromCart,
+    getTotalCartAmount,
+    updateCartQuantity,
+  } = useContext(ShopContext);
 
   if (!Array.isArray(all_products) || all_products.length === 0) {
     return <div>Loading...</div>;
@@ -24,7 +29,7 @@ const CartItems = () => {
             <th className="p-1 py-2">Price</th>
             <th className="p-1 py-2">Size</th>
             <th className="p-1 py-2">Color</th>
-            <th className="p-1 py-2">Total</th>
+            <th className="p-1 py-2">Quantity</th>
             <th className="p-1 py-2">Remove</th>
           </tr>
         </thead>
@@ -55,7 +60,29 @@ const CartItems = () => {
                   <td>${product.new_price}</td>
                   <td>{size}</td>
                   <td>{color}</td>
-                  <td>{cartItems[key]}</td>
+                  {/* <td>{cartItems[key]}</td> */}
+                  <td>
+                    <input
+                      type="number"
+                      min="1"
+                      value={cartItems[key]}
+                      style={{ width: "50px", padding: "5px", backgroundColor: "#f1f1f1" }}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        if (!isNaN(value) && value > 0) {
+                          updateCartQuantity(productId, { size, color }, value);
+                        } else if (e.target.value === "" || e.target.value === "0") {
+                          if (window.confirm("Are you sure you want to delete this item?")) {
+                            removeFromCart(productId, { size, color }, cartItems[key]);
+                          } else {
+                            updateCartQuantity(productId, { size, color }, cartItems[key]);
+                          }
+                        } else {
+                          updateCartQuantity(productId, { size, color }, 1); // Set to default value if input is invalid
+                        }
+                      }}
+                    />
+                  </td>
                   <td>${(product.new_price * cartItems[key]).toFixed(2)}</td>
                   <td>
                     <div className="bold-22 pl-14">
@@ -74,11 +101,11 @@ const CartItems = () => {
         </tbody>
       </table>
 
-      <div className="max-w-6xl mx-auto p-4 bg-white shadow-md">
+      <div className="max-w-6xl mx-auto p-4 bg-white shadow-md" style={{ marginTop: "20px" }}>
         <div className="flex flex-col md:flex-row justify-between">
           <div className="w-full md:w-1/2 p-4">
             <div className="flex flex-col gap-10">
-              <h4 className="bold-20">Summary</h4>
+              <h4 className="text-xl bold-20">SUMMARY</h4>
               <div>
                 <div className="flexBetween py-4">
                   <h4 className="medium-16">Subtotal:</h4>
@@ -114,7 +141,7 @@ const CartItems = () => {
             </div>
           </div>
           <div className="w-full md:w-1/2 p-4 bg-white">
-            <h2 className="text-xl font-bold mb-4">NGƯỜI NHẬN HÀNG</h2>
+            <h2 className="text-xl font-bold mb-4">ORDER DETAIL</h2>
             <form>
               <div className="mb-4">
                 <label className="block mb-2">Tên</label>

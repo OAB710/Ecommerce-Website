@@ -630,6 +630,45 @@ app.post('/addtocart', fetchUser, async (req, res) => {
   }
 });
 
+app.post('/updatecartquantity', fetchUser, async (req, res) => {
+  const { productId, variant, quantity } = req.body;
+  if (!productId || !variant || !quantity) {
+    return res.status(400).json({
+      success: false,
+      message: "Product ID, variant, and quantity are required",
+    });
+  }
+
+  try {
+    const userData = await User.findById(req.user.id);
+    if (userData) {
+      if (!userData.cartData) {
+        userData.cartData = {};
+      }
+
+      const cartKey = `${productId}_${variant.size}_${variant.color}`;
+      userData.cartData[cartKey] = quantity;
+
+      userData.markModified('cartData');
+
+      
+      await userData.save();
+      res.json({ success: true, message: "Cart quantity updated", cartData: userData.cartData });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+  } catch (error) {
+    console.error("Error updating cart quantity:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+});
+
 // creating endpoint for removing cartData
 // app.post('/removefromcart', fetchUser, async (req, res) => {
 //   console.log("Removed", req.body.itemId);
@@ -651,6 +690,35 @@ app.post('/addtocart', fetchUser, async (req, res) => {
 
 // });
 
+// app.post('/removefromcart', fetchUser, async (req, res) => {
+//   const { productId, variant, quantity } = req.body;
+//   if (!productId || !variant || !quantity) {
+//     return res.status(400).json({ success: false, message: "Product ID, variant, and quantity are required" });
+//   }
+
+//   try {
+//     const userData = await User.findOne({ _id: req.user.id });
+//     if (userData && userData.cartData) {
+//       const cartKey = `${productId}_${variant.size}_${variant.color}`;
+//       if (userData.cartData[cartKey] && userData.cartData[cartKey] > 0) {
+//         userData.cartData[cartKey] -= quantity;
+//         if (userData.cartData[cartKey] <= 0) {
+//           delete userData.cartData[cartKey];
+//         }
+//         await userData.save();
+//         res.json({ success: true, message: "Removed from cart" });
+//       } else {
+//         res.status(400).json({ success: false, message: "Item not in cart or invalid quantity" });
+//       }
+//     } else {
+//       res.status(404).json({ success: false, message: "User or cart data not found" });
+//     }
+//   } catch (error) {
+//     console.error("Error removing from cart:", error);
+//     res.status(500).json({ success: false, message: "Internal server error" });
+//   }
+// });
+
 app.post('/removefromcart', fetchUser, async (req, res) => {
   const { productId, variant, quantity } = req.body;
   if (!productId || !variant || !quantity) {
@@ -666,8 +734,9 @@ app.post('/removefromcart', fetchUser, async (req, res) => {
         if (userData.cartData[cartKey] <= 0) {
           delete userData.cartData[cartKey];
         }
+        userData.markModified('cartData');
         await userData.save();
-        res.json({ success: true, message: "Removed from cart" });
+        res.json({ success: true, message: "Removed from cart", cartData: userData.cartData });
       } else {
         res.status(400).json({ success: false, message: "Item not in cart or invalid quantity" });
       }
