@@ -95,7 +95,7 @@
 //       }
 //       return updatedCartItems;
 //     });
-  
+
 //     if (localStorage.getItem("auth-token")) {
 //       fetch("http://localhost:4000/removefromcart", {
 //         method: "POST",
@@ -167,6 +167,7 @@ export const ShopContext = createContext(null);
 const ShopContextProvider = (props) => {
   const [cartItems, setCartItems] = useState([]);
   const [all_products, setAll_products] = useState([]);
+  const [discount, setDiscount] = useState(0);
 
   useEffect(() => {
     fetch("http://localhost:4000/allproducts")
@@ -190,6 +191,30 @@ const ShopContextProvider = (props) => {
         .then((data) => setCartItems(data));
     }
   }, []);
+
+    const applyCoupon = (code) => {
+    fetch("http://localhost:4000/applycoupon", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ code }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          setDiscount(data.discount);
+          alert("Coupon applied successfully!");
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch((error) => {
+        console.error("Error applying coupon:", error);
+        alert("An error occurred while applying the coupon.");
+      });
+  };
 
   const addToCart = (productId, variant, quantity = 1) => {
     const cartKey = `${productId}_${variant.size}_${variant.color}`;
@@ -251,13 +276,13 @@ const ShopContextProvider = (props) => {
     }
   };
 
-    const updateCartQuantity = (productId, variant, quantity) => {
+  const updateCartQuantity = (productId, variant, quantity) => {
     const cartKey = `${productId}_${variant.size}_${variant.color}`;
     setCartItems((prev) => ({
       ...prev,
       [cartKey]: quantity,
     }));
-  
+
     if (localStorage.getItem("auth-token")) {
       fetch("http://localhost:4000/updatecartquantity", {
         method: "POST",
@@ -283,8 +308,9 @@ const ShopContextProvider = (props) => {
     for (const item in cartItems) {
       if (cartItems[item] > 0) {
         let itemInfo = all_products.find(
-          (product) => product.id === Number(item)
+          (product) => product.id === item.split("_")[0]
         );
+        console.log("Item info:", itemInfo);
         if (itemInfo) {
           const price =
             itemInfo.new_price !== undefined ? itemInfo.new_price : 0;
@@ -292,6 +318,7 @@ const ShopContextProvider = (props) => {
         }
       }
     }
+    console.log("Total amount:", totalAmount);
     return totalAmount;
   };
 
@@ -313,6 +340,8 @@ const ShopContextProvider = (props) => {
     updateCartQuantity,
     getTotalCartAmount,
     getTotalCartItems,
+    applyCoupon,
+    discount,
   };
   return (
     <ShopContext.Provider value={contextValue}>

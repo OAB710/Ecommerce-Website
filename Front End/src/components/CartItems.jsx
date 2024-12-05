@@ -1,22 +1,40 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { ShopContext } from "../Context/ShopContext";
 import { TbTrash } from "react-icons/tb";
+import { useNavigate } from "react-router-dom";
 
 const CartItems = () => {
+  const navigate = useNavigate();
   const {
     all_products,
     cartItems,
     removeFromCart,
     getTotalCartAmount,
     updateCartQuantity,
+    applyCoupon,
+    discount, // Thêm dòng này
   } = useContext(ShopContext);
+
+  const [couponCode, setCouponCode] = useState("");
 
   if (!Array.isArray(all_products) || all_products.length === 0) {
     return <div>Loading...</div>;
   }
 
   if (Object.keys(cartItems).length === 0) {
-    return <div>Your cart is empty</div>;
+    return (
+      <div className="flexCenter">
+        <h1 style={{ marginTop: "100px" }}>
+          Your cart is empty.{" "}
+          <span
+            style={{ color: "#FF813F", cursor: "pointer" }}
+            onClick={() => navigate("/")}
+          >
+            Fill cart to continue
+          </span>
+        </h1>
+      </div>
+    );
   }
 
   return (
@@ -60,22 +78,40 @@ const CartItems = () => {
                   <td>${product.new_price}</td>
                   <td>{size}</td>
                   <td>{color}</td>
-                  {/* <td>{cartItems[key]}</td> */}
                   <td>
                     <input
                       type="number"
-                      min="1"
+                      min="0"
                       value={cartItems[key]}
-                      style={{ width: "50px", padding: "5px", backgroundColor: "#f1f1f1" }}
+                      style={{
+                        width: "50px",
+                        padding: "5px",
+                        backgroundColor: "#f1f1f1",
+                      }}
                       onChange={(e) => {
                         const value = parseInt(e.target.value);
                         if (!isNaN(value) && value > 0) {
                           updateCartQuantity(productId, { size, color }, value);
-                        } else if (e.target.value === "" || e.target.value === "0") {
-                          if (window.confirm("Are you sure you want to delete this item?")) {
-                            removeFromCart(productId, { size, color }, cartItems[key]);
+                        } else if (
+                          e.target.value === "" ||
+                          e.target.value === "0"
+                        ) {
+                          if (
+                            window.confirm(
+                              "Are you sure you want to delete this item?"
+                            )
+                          ) {
+                            removeFromCart(
+                              productId,
+                              { size, color },
+                              cartItems[key]
+                            );
                           } else {
-                            updateCartQuantity(productId, { size, color }, cartItems[key]);
+                            updateCartQuantity(
+                              productId,
+                              { size, color },
+                              cartItems[key]
+                            );
                           }
                         } else {
                           updateCartQuantity(productId, { size, color }, 1); // Set to default value if input is invalid
@@ -87,9 +123,20 @@ const CartItems = () => {
                   <td>
                     <div className="bold-22 pl-14">
                       <TbTrash
-                        onClick={() =>
-                          removeFromCart(Number(productId), { size, color }, 1)
-                        }
+                        style={{ cursor: "pointer" }}
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              "Are you sure you want to delete this item?"
+                            )
+                          ) {
+                            removeFromCart(
+                              productId,
+                              { size, color },
+                              cartItems[key]
+                            );
+                          }
+                        }}
                       />
                     </div>
                   </td>
@@ -101,10 +148,16 @@ const CartItems = () => {
         </tbody>
       </table>
 
-      <div className="max-w-6xl mx-auto p-4 bg-white shadow-md" style={{ marginTop: "20px" }}>
+      <div
+        className="max-w-6xl mx-auto p-4 bg-white shadow-md"
+        style={{ marginTop: "20px" }}
+      >
         <div className="flex flex-col md:flex-row justify-between">
           <div className="w-full md:w-1/2 p-4">
-            <div className="flex flex-col gap-10">
+            <div
+              className="flex flex-col gap-10"
+              style={{ marginRight: "50px" }}
+            >
               <h4 className="text-xl bold-20">SUMMARY</h4>
               <div>
                 <div className="flexBetween py-4">
@@ -119,12 +172,24 @@ const CartItems = () => {
                   <h4 className="text-gray-30 font-semibold">Free</h4>
                 </div>
                 <hr />
+                {discount > 0 && ( // Thêm đoạn này
+                  <>
+                    <div className="flexBetween py-4">
+                      <h4 className="medium-16">Discount:</h4>
+                      <h4 className="text-gray-30 font-semibold">
+                        ${discount}
+                      </h4>
+                    </div>
+                    <hr />
+                  </>
+                )}
                 <div className="flexBetween py-4">
                   <h4 className="bold-18">Total:</h4>
-                  <h4 className="bold-18">${getTotalCartAmount()}</h4>
+                  <h4 className="bold-18">
+                    ${Math.max(0, getTotalCartAmount() - discount)}
+                  </h4>
                 </div>
               </div>
-              <button className="btn_dark_rounded w-44">Checkout</button>
               <div className="flex flex-col gap-10">
                 <h4 className="bold-20 capitalize">
                   Your coupon code enter here:
@@ -134,8 +199,15 @@ const CartItems = () => {
                     type="text"
                     placeholder="Coupon code"
                     className="bg-transparent border-none outline-none"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
                   />
-                  <button className="btn_dark_rounded">Submit</button>
+                  <button
+                    className="btn_dark_rounded"
+                    onClick={() => applyCoupon(couponCode)}
+                  >
+                    Submit
+                  </button>
                 </div>
               </div>
             </div>
@@ -144,58 +216,61 @@ const CartItems = () => {
             <h2 className="text-xl font-bold mb-4">ORDER DETAIL</h2>
             <form>
               <div className="mb-4">
-                <label className="block mb-2">Tên</label>
+                <label className="block mb-2">Name</label>
                 <input
                   type="text"
                   className="w-full p-2 border border-gray-300"
-                  value="Dutch"
+                  value=""
                 />
               </div>
               <div className="mb-4">
-                <label className="block mb-2">Điện thoại liên lạc</label>
+                <label className="block mb-2">Contact</label>
                 <input
                   type="text"
                   className="w-full p-2 border border-gray-300"
-                  value="0123456789"
+                  value=""
                 />
               </div>
               <div className="mb-4">
-                <label className="block mb-2">Địa chỉ</label>
+                <label className="block mb-2">City</label>
                 <input
                   type="text"
                   className="w-full p-2 border border-gray-300"
-                  value="Địa chỉ mặc định"
+                  value=""
                 />
               </div>
               <div className="mb-4">
-                <label className="block mb-2">Địa chỉ cụ thể</label>
+                <label className="block mb-2">Address</label>
                 <input
                   type="text"
                   className="w-full p-2 border border-gray-300"
-                  value="TPHCM"
+                  value=""
                 />
               </div>
               <div className="mb-4">
-                <label className="block mb-2">Ghi chú</label>{" "}
+                <label className="block mb-2">Note</label>{" "}
                 <textarea className="w-full p-2 border border-gray-300"></textarea>
               </div>
               <div className="mb-4">
-                <label className="block mb-2">Phương thức thanh toán</label>
+                <label className="block mb-2">Payment method</label>
                 <div className="flex items-center mb-2">
                   <input type="radio" name="payment" className="mr-2" checked />
-                  <label>Thanh toán khi nhận hàng (COD)</label>
+                  <label>Cash on Delivery (COD)</label>
                 </div>
                 <div className="flex items-center">
                   <input type="radio" name="payment" className="mr-2" />
-                  <label>Thanh toán bằng ví MoMo</label>
+                  <label>Pay with MoMo wallet</label>
                 </div>
               </div>
               <div className="flex flex-col md:flex-row">
                 <button className="w-full md:w-auto bg-teal-500 text-white p-2 mb-2 md:mb-0 md:mr-2">
-                  ĐẶT HÀNG: GIAO HÀNG VÀ THU TIỀN TẬN NƠI
+                  ORDER: DELIVERY AND CASH ON DELIVERY
                 </button>
-                <button className="w-full md:w-auto bg-yellow-500 text-white p-2">
-                  CẦN SẢN PHẨM KHÁC? CHỌN THÊM...
+                <button
+                  className="w-full md:w-auto bg-yellow-500 text-white p-2"
+                  onClick={() => navigate("/")}
+                >
+                  NEED OTHER PRODUCTS? CHOOSE MORE...
                 </button>
               </div>
             </form>

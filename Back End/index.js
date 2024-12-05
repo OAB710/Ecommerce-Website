@@ -946,6 +946,32 @@ app.listen(port, (error) => {
   }
 });
 
+app.post('/applycoupon', async (req, res) => {
+  const { code } = req.body;
+
+  try {
+    const coupon = await Coupons.findOne({ code });
+
+    if (!coupon) {
+      return res.status(404).json({ success: false, message: "Coupon not found" });
+    }
+
+    const currentDate = new Date();
+    if (currentDate > coupon.expirationDate) {
+      return res.status(400).json({ success: false, message: "Coupon has expired" });
+    }
+
+    if (coupon.used) {
+      return res.status(400).json({ success: false, message: "Coupon has already been used" });
+    }
+
+    res.json({ success: true, message: "Coupon is valid", discount: coupon.discount });
+  } catch (error) {
+    console.error("Error applying coupon:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
 app.get('/dashboard-data', async (req, res) => {
   try {
     const totalProducts = await Product.countDocuments();
