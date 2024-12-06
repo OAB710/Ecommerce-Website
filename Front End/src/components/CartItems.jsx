@@ -13,9 +13,14 @@ const CartItems = () => {
     updateCartQuantity,
     applyCoupon,
     discount, // Thêm dòng này
+    user,
   } = useContext(ShopContext);
 
   const [couponCode, setCouponCode] = useState("");
+
+  const handleChooseDeliveryAddress = () => {
+    navigate("/delivery", { state: { name: user.name, contact: user.contact, address: user.address } });
+  };
 
   if (!Array.isArray(all_products) || all_products.length === 0) {
     return <div>Loading...</div>;
@@ -214,36 +219,39 @@ const CartItems = () => {
           </div>
           <div className="w-full md:w-1/2 p-4 bg-white">
             <h2 className="text-xl font-bold mb-4">ORDER DETAIL</h2>
+            <button
+              className="mb-4 w-full h-7 text-white rounded
+              bg-yellow-500 text-white"
+              onClick={handleChooseDeliveryAddress}
+              style={{ backgroundColor: "#292C27" }}
+            >
+              Choose Delivery Address
+            </button>
             <form>
               <div className="mb-4">
-                <label className="block mb-2">Name</label>
+                <label className="block mb-2">Name *</label>
                 <input
                   type="text"
                   className="w-full p-2 border border-gray-300"
+                  value={user.name}
                   required={true}
                 />
               </div>
               <div className="mb-4">
-                <label className="block mb-2">Contact</label>
+                <label className="block mb-2">Contact *</label>
                 <input
                   type="text"
                   className="w-full p-2 border border-gray-300"
+                  value={user.contact}
                   required={true}
                 />
               </div>
               <div className="mb-4">
-                <label className="block mb-2">City</label>
+                <label className="block mb-2">Address *</label>
                 <input
                   type="text"
                   className="w-full p-2 border border-gray-300"
-                  required={true}
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block mb-2">Address</label>
-                <input
-                  type="text"
-                  className="w-full p-2 border border-gray-300"
+                  value={user.address}
                   required={true}
                 />
               </div>
@@ -264,7 +272,7 @@ const CartItems = () => {
               </div>
               <div className="flex flex-col md:flex-row">
                 <button className="w-full md:w-auto bg-teal-500 text-white p-2 mb-2 md:mb-0 md:mr-2">
-                  ORDER: DELIVERY AND CASH ON DELIVERY
+                  ORDER: DELIVERY TO THIS ADDRESS
                 </button>
                 <button
                   className="w-full md:w-auto bg-yellow-500 text-white p-2"

@@ -129,9 +129,25 @@ const User = mongoose.model('User', {
     unique: true,
   },
   address: {
-    type: [String],
+    type: String,
     required: true,
   },
+  addresses: [
+    {
+      name: {
+        type: String,
+        required: true,
+      },
+      contact: {
+        type: String,
+        required: true,
+      },
+      address: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
   role: {
     type: String,
     enum: ['customer', 'admin'],
@@ -253,10 +269,13 @@ const Order = mongoose.model('Order', {
     enum: ['pending', 'confirmed', 'shipping', 'delivered'],
     default: 'pending',
   },
+  name: { type: String }, // Thêm dòng này
+  phone: { type: String }, // Thêm dòng này
   shippingAddress: {
     type: String,
     required: true,
   },
+
   note: { type: String }, // Thêm dòng này
   
   paymentMethod: {
@@ -267,6 +286,8 @@ const Order = mongoose.model('Order', {
     default: Date.now,
   },
 });
+
+
 
 app.post("/addproduct", async (req, res) => {
   const { name, image, category, new_price, old_price, variants, date, available } = req.body;
@@ -451,6 +472,7 @@ app.post('/signup', async (req, res) => {
       password: req.body.password,
       phone: req.body.phone,
       address: req.body.address,
+      addresses: req.body.addresses || [], // Thêm trường addresses
       role: req.body.role || 'customer', // Mặc định là 'customer' nếu không có role
       LoyaltyPoints: req.body.LoyaltyPoints || 0,
       LoyaltyTicker: req.body.LoyaltyTicker || 0,
@@ -575,6 +597,26 @@ const fetchUser = async (req, res, next) => {
     }
   }
 };
+
+app.get('/shipping-addresses', fetchUser, async (req, res) => {
+  try {
+    // Lấy userId từ token
+    const userId = req.user.id;
+
+    // Tìm người dùng theo userId
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Trả về danh sách địa chỉ giao hàng
+    res.json({ success: true, addresses: user.addresses });
+  } catch (error) {
+    console.error("Error fetching shipping addresses:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
 
 // creating endpoint for adding products in cartdata
 // app.post('/addtocart', fetchUser, async (req, res) => {
@@ -1163,6 +1205,81 @@ app.get('/revenue', async (req, res) => {
     res.status(500).json({ success: false, message: "An error occurred while fetching revenue data" });
   }
 });
+
+app.post('/add-address', fetchUser, async (req, res) => {
+  try {
+    const { name, contact, address } = req.body;
+
+    if (!name || !contact || !address) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
+    }
+
+    // Tìm người dùng theo userId
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Thêm địa chỉ mới vào danh sách địa chỉ của người dùng
+    user.addresses.push({ name, contact, address });
+    await user.save();
+
+    res.json({ success: true, message: "Address added successfully", addresses: user.addresses });
+  } catch (error) {
+    console.error("Error adding address:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+app.delete('/delete-address/:index', fetchUser, async (req, res) => {
+  try {
+    const { index } = req.params;
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (user.addresses[index]) {
+      user.addresses.splice(index, 1);
+      await user.save();
+      res.json({ success: true, message: "Address deleted successfully", addresses: user.addresses });
+    } else {
+      res.status(404).json({ success: false, message: "Address not found" });
+    }
+  } catch (error) {
+    console.error("Error deleting address:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+app.put('/update-address/:index', fetchUser, async (req, res) => {
+  try {
+    const { index } = req.params;
+    const { name, contact, address } = req.body;
+
+    // Tìm người dùng theo userId
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Cập nhật địa chỉ tại vị trí index
+    if (user.addresses[index]) {
+      user.addresses[index] = { name, contact, address };
+      await user.save();
+      res.json({ success: true, message: "Address updated successfully", addresses: user.addresses });
+    } else {
+      res.status(404).json({ success: false, message: "Address not found" });
+    }
+  } catch (error) {
+    console.error("Error updating address:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
 app.get('/order-stats', async (req, res) => {
   const { year } = req.query;
   const startDate = new Date(year, 0, 1);

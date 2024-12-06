@@ -106,6 +106,7 @@ const Profile = () => {
     email: "",
     phone: "",
     address: "",
+    addresses: [], // Thêm dòng này
   });
   const navigate = useNavigate();
 
@@ -124,6 +125,10 @@ const Profile = () => {
       })
       .catch((error) => console.error("Error fetching profile:", error));
   }, []);
+
+  const handleManageShipping = () => {
+    navigate("/delivery");
+  };
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -178,7 +183,10 @@ const Profile = () => {
         <h1 className="text-2xl font-bold mb-6">My Account</h1>
         <form onSubmit={handleUpdate}>
           <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2" htmlFor="name">
+            <label
+              className="block text-gray-700 font-bold mb-2"
+              htmlFor="name"
+            >
               Name *
             </label>
             <input
@@ -191,19 +199,25 @@ const Profile = () => {
             />
           </div>
           <div className="mb-4">
-             <label className="block text-red-500 font-bold mb-2" htmlFor="points">
-               Loyalty Points
-             </label>
-             <input
-               className="w-full px-3 py-2 border rounded bg-gray-200"
-               id="points"
-               type="text"
-               value={profile.LoyaltyPoints}
-               disabled
-             />
-           </div>
+            <label
+              className="block text-red-500 font-bold mb-2"
+              htmlFor="points"
+            >
+              Loyalty Points
+            </label>
+            <input
+              className="w-full px-3 py-2 border rounded bg-gray-200"
+              id="points"
+              type="text"
+              value={profile.LoyaltyPoints}
+              disabled
+            />
+          </div>
           <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2" htmlFor="email">
+            <label
+              className="block text-gray-700 font-bold mb-2"
+              htmlFor="email"
+            >
               Email *
             </label>
             <input
@@ -217,7 +231,10 @@ const Profile = () => {
           </div>
           <div className="mb-4 flex items-center">
             <div className="w-full">
-              <label className="block text-gray-700 font-bold mb-2" htmlFor="phone">
+              <label
+                className="block text-gray-700 font-bold mb-2"
+                htmlFor="phone"
+              >
                 Phone *
               </label>
               <input
@@ -231,7 +248,10 @@ const Profile = () => {
             </div>
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2" htmlFor="address">
+            <label
+              className="block text-gray-700 font-bold mb-2"
+              htmlFor="address"
+            >
               Address *
             </label>
             <input
@@ -243,25 +263,50 @@ const Profile = () => {
               required
             />
           </div>
+          <h1 className="mb-6 text-blue-500">
+            <span
+              style={{ cursor: "pointer" }}
+              className="underline hover:text-red-500"
+              onClick={handleManageShipping}
+            >
+              Click here to manage your shipping information
+            </span>
+          </h1>
+          {/* Code here */}
           <div className="flex flex-col space-y-2">
-  <div className="flex space-x-2">
-    <button type="submit" className="w-1/2 px-4 py-2 bg-blue-500 text-white font-bold rounded">
-      UPDATE PROFILE
-    </button>
-    <button className="w-1/2 px-4 py-2 bg-gray-500 text-white font-bold rounded">
-      CHANGE PASSWORD
-    </button>
-  </div>
-  <button type="button" onClick={() => navigate("/")} className="w-full px-4 py-2 border bg-yellow-500 text-white font-bold rounded">
-    MY ORDERS
-  </button>
-  <button type="button" onClick={handleDelete} className="w-full px-4 py-2 bg-red-500 text-white font-bold rounded">
-    DELETE ACCOUNT
-  </button>
-  <button type="button" onClick={() => navigate("/")} className="w-full px-4 py-2 border border-black text-black font-bold rounded">
-    EXIT
-  </button>
-</div>
+            <div className="flex space-x-2">
+              <button
+                type="submit"
+                className="w-1/2 px-4 py-2 bg-blue-500 text-white font-bold rounded"
+              >
+                UPDATE PROFILE
+              </button>
+              <button className="w-1/2 px-4 py-2 bg-gray-500 text-white font-bold rounded">
+                CHANGE PASSWORD
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate("/orders")}
+              className="w-full px-4 py-2 border bg-yellow-500 text-white font-bold rounded"
+            >
+              MY ORDERS
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="w-full px-4 py-2 bg-red-500 text-white font-bold rounded"
+            >
+              DELETE ACCOUNT
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="w-full px-4 py-2 border border-black text-black font-bold rounded"
+            >
+              EXIT
+            </button>
+          </div>
         </form>
       </div>
     </div>

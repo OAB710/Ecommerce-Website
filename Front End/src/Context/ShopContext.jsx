@@ -168,6 +168,7 @@ const ShopContextProvider = (props) => {
   const [cartItems, setCartItems] = useState([]);
   const [all_products, setAll_products] = useState([]);
   const [discount, setDiscount] = useState(0);
+  const [user, setUser] = useState({ name: "", contact: "", address: "" });
 
   useEffect(() => {
     fetch("http://localhost:4000/allproducts")
@@ -189,10 +190,28 @@ const ShopContextProvider = (props) => {
       })
         .then((response) => response.json())
         .then((data) => setCartItems(data));
+
+      fetch("http://localhost:4000/profile", {
+        method: "GET",
+        headers: {
+          "auth-token": localStorage.getItem("auth-token"),
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data) {
+            setUser({
+              name: data.name,
+              contact: data.phone,
+              address: data.address,
+            });
+          }
+        })
+        .catch((error) => console.error("Error fetching profile:", error));
     }
   }, []);
 
-    const applyCoupon = (code) => {
+  const applyCoupon = (code) => {
     fetch("http://localhost:4000/applycoupon", {
       method: "POST",
       headers: {
@@ -342,6 +361,7 @@ const ShopContextProvider = (props) => {
     getTotalCartItems,
     applyCoupon,
     discount,
+    user,
   };
   return (
     <ShopContext.Provider value={contextValue}>
