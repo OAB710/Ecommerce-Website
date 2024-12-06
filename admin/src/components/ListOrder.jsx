@@ -50,7 +50,7 @@ const ListOrder = () => {
             {allOrders.map((order, i) => (
               <tr key={i} className="border-b border-slate-900/20 text-gray-20 p-6 medium-14" style={{ height: '3em' }}>
                 <td>{order._id}</td>
-                <td>{order.user.name}</td>
+                <td>{order.user ? order.user.name : 'Unknown User'}</td>
                 <td>{formatPrice(order.total)}</td>
                 <td className={order.status === "confirmed" ? "text-green-500" : order.status === "pending" ? "text-orange-500" : ""}>
                   {order.status}

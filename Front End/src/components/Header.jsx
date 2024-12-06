@@ -2,6 +2,7 @@ import { Link, NavLink } from "react-router-dom";
 import logo from "../assets/logo.svg";
 import logout from "../assets/logout.svg";
 import user from "../assets/user.svg";
+import userIcon from "../assets/user.png"; // Import the user.png icon
 import Navbar from "./Navbar";
 import { useState, useContext } from "react";
 import { MdClose, MdMenu } from "react-icons/md";
@@ -84,7 +85,9 @@ const Header = () => {
                 {getTotalCartItems()}
               </span>
             </NavLink>
-
+            <NavLink to={"profile"} className={"flex"}>
+              <img src={userIcon} alt="User Icon" className="h-8 w-8 rounded-full" />
+            </NavLink>
             {localStorage.getItem("auth-token") ? (
               <NavLink
                 onClick={() => {

@@ -33,22 +33,28 @@ app.get("/", (req, res) => {
 
 // Image storage engine
 const storage = multer.diskStorage({
-  destination: "./upload/images",
+  destination: './upload/images',
   filename: (req, file, cb) => {
-    return cb(
-      null,
-      `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`
-    );
+    return cb(null, `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`);
   },
 });
 
 const upload = multer({
   storage: storage,
+  fileFilter: (req, file, cb) => {
+    const filetypes = /jpeg|jpg|png/;
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb("Error: File upload only supports the following filetypes - " + filetypes);
+  },
 });
 
-app.use("/images", express.static("upload/images"));
+app.use('/images', express.static('upload/images'));
 
-app.post("/upload", upload.single("product"), (req, res) => {
+app.post('/upload', upload.single('product'), (req, res) => {
   res.json({
     success: 1,
     image_url: `http://localhost:${port}/images/${req.file.filename}`,
@@ -61,10 +67,6 @@ const Product = mongoose.model("Product", {
     required: true,
   },
   name: {
-    type: String,
-    required: true,
-  },
-  image: {
     type: String,
     required: true,
   },
@@ -81,11 +83,16 @@ const Product = mongoose.model("Product", {
     required: true,
   },
   tags: {
-    type: [String],
+    type: String,
+    enum: ['Sport', 'Casual', 'Office', 'Party', 'OutDoor', 'Loungewear', 'Sleepwear', 'Swimwear', 'Lingerie'],
     required: true,
   },
   variants: [
     {
+      image: {
+        type: String,
+        required: true,
+      },
       color: {
         type: String,
         required: true,
@@ -109,7 +116,56 @@ const Product = mongoose.model("Product", {
     type: Boolean,
     default: true,
   },
+  shortDescription: {
+    type: String,
+    required: true,
+    maxlength: 50,
+  },
 });
+
+app.post("/addproduct", async (req, res) => {
+  const { name, category, new_price, old_price, variants, date, available, tags, shortDescription } = req.body;
+
+  // Check if all required fields are filled
+  if (!name || !category || !new_price || !old_price || !tags || !shortDescription) {
+    return res.status(400).json({ success: false, message: "All fields are required" });
+  }
+
+  // Check if new_price and old_price are numbers
+  if (isNaN(new_price) || isNaN(old_price)) {
+    return res.status(400).json({ success: false, message: "New price and old price must be numbers" });
+  }
+
+  // Check if shortDescription is within the character limit
+  if (shortDescription.length > 50) {
+    return res.status(400).json({ success: false, message: "Short description must be 50 characters or less" });
+  }
+
+  const product = new Product({
+    id: new mongoose.Types.ObjectId().toString(),
+    name,
+    category,
+    new_price,
+    old_price,
+    variants: variants.map(variant => ({
+      ...variant,
+      image: variant.image instanceof File ? `images/${variant.image.name}` : variant.image
+    })),
+    date,
+    available,
+    tags,
+    shortDescription,
+  });
+
+  try {
+    await product.save();
+    res.json({ success: true, message: "Product added successfully" });
+  } catch (error) {
+    console.error("Error adding product:", error);
+    res.status(500).json({ success: false, message: "An error occurred while adding the product" });
+  }
+});
+
 const User = mongoose.model('User', {
   name: {
     type: String,
@@ -240,6 +296,7 @@ const Order = mongoose.model('Order', {
   products: [
     {
       product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+      
       quantity: Number,
       price: Number,
     },
@@ -267,37 +324,37 @@ const Order = mongoose.model('Order', {
 });
 
 app.post("/addproduct", async (req, res) => {
-  const { name, image, category, new_price, old_price, variants, date, available } = req.body;
+  const { name, category, new_price, old_price, variants, date, available, tags, shortDescription } = req.body;
 
-  if (!name || !image || !category || !new_price || !old_price) {
+  // Check if all required fields are filled
+  if (!name || !category || !new_price || !old_price || !tags || !shortDescription) {
     return res.status(400).json({ success: false, message: "All fields are required" });
   }
 
+  // Check if new_price and old_price are numbers
   if (isNaN(new_price) || isNaN(old_price)) {
     return res.status(400).json({ success: false, message: "New price and old price must be numbers" });
   }
 
-  let products = await Product.find({});
-  let id;
-
-  if (products.length > 0) {
-    let last_product_array = products.slice(-1);
-    let last_product = last_product_array[0];
-    id = last_product.id + 1; 
-  } else {
-    id = 1;
+  // Check if shortDescription is within the character limit
+  if (shortDescription.length > 50) {
+    return res.status(400).json({ success: false, message: "Short description must be 50 characters or less" });
   }
 
   const product = new Product({
-    id: id,
-    name: name,
-    image: image,
-    category: category,
-    new_price: new_price,
-    old_price: old_price,
-    variants: variants,
-    date: date,
-    available: available,
+    id: new mongoose.Types.ObjectId().toString(),
+    name,
+    category,
+    new_price,
+    old_price,
+    variants: variants.map(variant => ({
+      ...variant,
+      image: variant.image instanceof File ? `images/${variant.image.name}` : variant.image
+    })),
+    date,
+    available,
+    tags,
+    shortDescription,
   });
 
   try {
@@ -1129,5 +1186,153 @@ app.get('/reviews/:productId', async (req, res) => {
   } catch (error) {
     console.error("Error fetching reviews:", error);
     res.status(500).json({ success: false, message: "An error occurred while fetching reviews" });
+  }
+});
+app.get('/products', async (req, res) => {
+  const { page = 1, limit = 10, search = '', category = '', tag = '', sort = '' } = req.query;
+  const skip = (page - 1) * limit;
+  let query = {};
+
+  if (search) {
+    query.name = { $regex: search, $options: 'i' };
+  }
+  if (category) {
+    query.category = category;
+  }
+  if (tag) {
+    query.tags = tag;
+  }
+
+  let sortOption = {};
+  if (sort === 'price-asc') {
+    sortOption.new_price = 1;
+  } else if (sort === 'price-desc') {
+    sortOption.new_price = -1;
+  } else if (sort === 'relevance') {
+    sortOption.date = -1;
+  }
+
+  try {
+    const products = await Product.find(query)
+      .sort(sortOption)
+      .skip(skip)
+      .limit(Number(limit));
+    const totalProducts = await Product.countDocuments(query);
+
+    res.json({
+      products,
+      totalPages: Math.ceil(totalProducts / limit),
+      currentPage: Number(page),
+    });
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    res.status(500).json({ success: false, message: "An error occurred while fetching products" });
+  }
+});
+app.get('/categories', async (req, res) => {
+  try {
+    const categories = await Product.distinct('category');
+    res.json(categories);
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    res.status(500).json({ success: false, message: "An error occurred while fetching categories" });
+  }
+});
+
+app.get('/tags', async (req, res) => {
+  try {
+    const tags = await Product.distinct('tags');
+    res.json(tags);
+  } catch (error) {
+    console.error("Error fetching tags:", error);
+    res.status(500).json({ success: false, message: "An error occurred while fetching tags" });
+  }
+});
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+
+// Configure nodemailer
+const transporter = nodemailer.createTransport({
+  service: 'Gmail',
+  auth: {
+    user: 'nguyentrungduc.forwork@gmail.com',
+    pass: '14072004az',
+  },
+});
+
+app.post('/forgotpassword', async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ success: false, message: "Email is required" });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Generate a reset token
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    await user.save();
+
+    // Send the reset email
+    const resetUrl = `http://localhost:5173/resetpassword/${resetToken}`;
+    const mailOptions = {
+      to: user.email,
+      from: 'trungductwice@gmail.com',
+      subject: 'Password Reset',
+      text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
+      Please click on the following link, or paste this into your browser to complete the process:\n\n
+      ${resetUrl}\n\n
+      If you did not request this, please ignore this email and your password will remain unchanged.\n`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.json({ success: true, message: "Password reset email sent" });
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
+    res.status(500).json({ success: false, message: "An error occurred while sending the password reset email" });
+  }
+});
+app.get('/profile', async (req, res) => {
+  try {
+    const token = req.header('auth-token');
+    if (!token) return res.status(401).json({ success: false, message: "Access Denied" });
+
+    const verified = jwt.verify(token, 'secret_ecom');
+    const user = await User.findById(verified.user.id);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    res.status(500).json({ success: false, message: "An error occurred while fetching the profile" });
+  }
+});
+
+app.post('/updateprofile', async (req, res) => {
+  try {
+    const token = req.header('auth-token');
+    if (!token) return res.status(401).json({ success: false, message: "Access Denied" });
+
+    const verified = jwt.verify(token, 'secret_ecom');
+    const user = await User.findById(verified.user.id);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const { name, email, phone, address } = req.body;
+    user.name = name;
+    user.email = email;
+    user.phone = phone;
+    user.address = address;
+    await user.save();
+
+    res.json({ success: true, message: "Profile updated successfully" });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(500).json({ success: false, message: "An error occurred while updating the profile" });
   }
 });
