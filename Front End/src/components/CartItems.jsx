@@ -220,7 +220,7 @@ const CartItems = () => {
                 <input
                   type="text"
                   className="w-full p-2 border border-gray-300"
-                  value=""
+                  required={true}
                 />
               </div>
               <div className="mb-4">
@@ -228,7 +228,7 @@ const CartItems = () => {
                 <input
                   type="text"
                   className="w-full p-2 border border-gray-300"
-                  value=""
+                  required={true}
                 />
               </div>
               <div className="mb-4">
@@ -236,7 +236,7 @@ const CartItems = () => {
                 <input
                   type="text"
                   className="w-full p-2 border border-gray-300"
-                  value=""
+                  required={true}
                 />
               </div>
               <div className="mb-4">
@@ -244,7 +244,7 @@ const CartItems = () => {
                 <input
                   type="text"
                   className="w-full p-2 border border-gray-300"
-                  value=""
+                  required={true}
                 />
               </div>
               <div className="mb-4">

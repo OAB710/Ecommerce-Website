@@ -257,6 +257,8 @@ const Order = mongoose.model('Order', {
     type: String,
     required: true,
   },
+  note: { type: String }, // Thêm dòng này
+  
   paymentMethod: {
     type: String,
   },
@@ -969,6 +971,53 @@ app.post('/applycoupon', async (req, res) => {
   } catch (error) {
     console.error("Error applying coupon:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// Fetch user profile
+app.get('/profile', fetchUser, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Update user profile
+app.put('/profile', fetchUser, async (req, res) => {
+  try {
+    const { name, email, phone, address } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { name, email, phone, address },
+      { new: true }
+    );
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Delete user account
+app.delete('/profile', fetchUser, async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ message: 'Account deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting account:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
