@@ -242,8 +242,8 @@ const Category = mongoose.model('Category', {
 });
 //review
 const Review = mongoose.model('Review', {
-  product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   review: {
     type: String,
     required: true,
@@ -1374,7 +1374,7 @@ app.get('/order-stats', async (req, res) => {
 app.get('/reviews/:productId', async (req, res) => {
   try {
     const reviews = await Review.find({ product: req.params.productId }).populate('user', 'name');
-    res.json(reviews);
+    res.json({ success: true, reviews });
   } catch (error) {
     console.error("Error fetching reviews:", error);
     res.status(500).json({ success: false, message: "An error occurred while fetching reviews" });
@@ -1443,12 +1443,12 @@ app.get('/tags', async (req, res) => {
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
-// Configure nodemailer
+
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
   auth: {
-    user: 'nguyentrungduc.forwork@gmail.com',
-    pass: '14072004az',
+    user: 'trungductwice@gmail.com',
+    pass: 'amut nfcl iguf hohn', // Use the generated app password here
   },
 });
 
@@ -1464,45 +1464,29 @@ app.post('/forgotpassword', async (req, res) => {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Generate a reset token
-    const resetToken = crypto.randomBytes(20).toString('hex');
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    // Generate a 6-character OTP
+    const otp = crypto.randomBytes(3).toString('hex').toUpperCase();
+    user.resetPasswordToken = otp;
+    user.resetPasswordExpires = Date.now() + 300000; // 5 minutes
     await user.save();
 
-    // Send the reset email
-    const resetUrl = `http://localhost:5173/resetpassword/${resetToken}`;
+    // Send the OTP email
     const mailOptions = {
       to: user.email,
-      from: 'trungductwice@gmail.com',
-      subject: 'Password Reset',
-      text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
-      Please click on the following link, or paste this into your browser to complete the process:\n\n
-      ${resetUrl}\n\n
+      from: process.env.EMAIL_USER,
+      subject: 'Password Reset OTP from Shopping cart',
+      text: `.\n\n
+      Your OTP is: ${otp}\n\n
+      This OTP is valid for 5 minutes.\n\n
       If you did not request this, please ignore this email and your password will remain unchanged.\n`,
     };
 
     await transporter.sendMail(mailOptions);
 
-    res.json({ success: true, message: "Password reset email sent" });
+    res.json({ success: true, message: "OTP sent successfully" });
   } catch (error) {
-    console.error("Error sending password reset email:", error);
-    res.status(500).json({ success: false, message: "An error occurred while sending the password reset email" });
-  }
-});
-app.get('/profile', async (req, res) => {
-  try {
-    const token = req.header('auth-token');
-    if (!token) return res.status(401).json({ success: false, message: "Access Denied" });
-
-    const verified = jwt.verify(token, 'secret_ecom');
-    const user = await User.findById(verified.user.id);
-    if (!user) return res.status(404).json({ success: false, message: "User not found" });
-
-    res.json({ success: true, user });
-  } catch (error) {
-    console.error("Error fetching profile:", error);
-    res.status(500).json({ success: false, message: "An error occurred while fetching the profile" });
+    console.error("Error sending OTP email:", error);
+    res.status(500).json({ success: false, message: "An error occurred while sending the OTP email" });
   }
 });
 
@@ -1526,5 +1510,107 @@ app.post('/updateprofile', async (req, res) => {
   } catch (error) {
     console.error("Error updating profile:", error);
     res.status(500).json({ success: false, message: "An error occurred while updating the profile" });
+  }
+});
+// Add a review
+// app.post('/addreview', async (req, res) => {
+//   const { productId, content, rating } = req.body;
+//   // const token = req.header('auth-token');
+
+//   // if (!token) {
+//   //   return res.status(401).json({ success: false, message: "Access Denied" });
+//   // }
+
+//   // const verified = jwt.verify(token, 'secret_ecom');
+//   const userId = verified.user.id;
+
+//   try {
+//     const review = new Review({
+//       productId,
+//       userId,
+//       content,
+//       rating,
+//     });
+
+//     await review.save();
+//     res.json({ success: true, message: "Review added successfully", review });
+//   } catch (error) {
+//     console.error("Error adding review:", error);
+//     res.status(500).json({ success: false, message: "An error occurred while adding the review" });
+//   }
+// });
+
+// Fetch reviews for a product
+app.get('/reviews/:productId', async (req, res) => {
+  try {
+    const reviews = await Review.find({ productId: req.params.productId }).populate('userId', 'name');
+    res.json({ success: true, reviews });
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    res.status(500).json({ success: false, message: "An error occurred while fetching reviews" });
+  }
+});
+app.post('/addreview', async (req, res) => {
+  const { product, user, review, rating, images } = req.body;
+
+  try {
+    const newReview = new Review({
+      product,
+      user,
+      review,
+      rating,
+      images,
+    });
+
+    await newReview.save();
+
+    // Populate the product and user fields
+    const populatedReview = await Review.findById(newReview._id).populate('product').populate('user');
+
+    res.json({ success: true, message: "Review added successfully", review: populatedReview });
+  } catch (error) {
+    console.error("Error adding review:", error);
+    res.status(500).json({ success: false, message: "An error occurred while adding the review" });
+  }
+});
+app.post('/verifyotp', async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    return res.status(400).json({ success: false, message: "Email and OTP are required" });
+  }
+
+  try {
+    const user = await User.findOne({ email, resetPasswordToken: otp, resetPasswordExpires: { $gt: Date.now() } });
+    if (!user) {
+      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+    }
+
+    res.json({ success: true, message: "OTP verified successfully" });
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+    res.status(500).json({ success: false, message: "An error occurred while verifying the OTP" });
+  }
+});
+app.post('/resetpassword', async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  if (!email || !otp || !newPassword) {
+    return res.status(400).json({ success: false, message: "Email, OTP, and new password are required" });
+  }
+
+  try {
+    const user = await User.findOne({ email, resetPasswordToken: otp, resetPasswordExpires: { $gt: Date.now() } });
+    if (!user) {
+      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+    }
+
+    user.password = newPassword; // Ensure you hash the password before saving
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ success: true, message: "Password reset successfully" });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ success: false, message: "An error occurred while resetting the password" });
   }
 });
