@@ -78,7 +78,7 @@ const ViewOrder = () => {
         <ul>
           {orderDetails.products.map((product, index) => (
             <li key={index}>
-              {product.product.name} - {product.quantity} x {formatPrice(product.price)}
+              {product.product.name} - {product.variant.size}, {product.variant.color} - {product.quantity} x {formatPrice(product.price)}
             </li>
           ))}
         </ul>

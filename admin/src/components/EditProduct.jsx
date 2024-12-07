@@ -1,37 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import upload_area from "../assets/upload_area.svg";
 import { MdSave, MdAdd, MdRemove } from "react-icons/md";
 
 const EditProduct = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
-  const [image, setImage] = useState(null);
   const [productDetails, setProductDetails] = useState({
     name: "",
-    image: "",
     category: "women",
     new_price: "",
     old_price: "",
     variants: [],
     available: true,
-    tags: [], // Initialize tags as an empty array
+    tags: "",
+    shortDescription: "",
   });
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     // Fetch product details
     const fetchProductDetails = async () => {
       const response = await fetch(`http://localhost:4000/product/${productId}`);
       const data = await response.json();
-      setProductDetails(data);
+      setProductDetails({
+        ...data,
+        variants: data.variants || [],
+        tags: data.tags || "",
+      });
     };
 
     fetchProductDetails();
   }, [productId]);
-
-  const imageHandler = (e) => {
-    setImage(e.target.files[0]);
-  };
 
   const changeHandler = (e) => {
     setProductDetails({ ...productDetails, [e.target.name]: e.target.value });
@@ -46,7 +45,7 @@ const EditProduct = () => {
   const addVariant = () => {
     setProductDetails({
       ...productDetails,
-      variants: [...productDetails.variants, { size: "", color: "", quantity: 0 }],
+      variants: [...productDetails.variants, { size: "", color: "", quantity: 0, image: null }],
     });
   };
 
@@ -55,48 +54,59 @@ const EditProduct = () => {
     setProductDetails({ ...productDetails, variants: updatedVariants });
   };
 
-  const addTag = () => {
-    setProductDetails({
-      ...productDetails,
-      tags: [...productDetails.tags, ""],
-    });
-  };
-
-  const removeTag = (index) => {
-    const updatedTags = productDetails.tags.filter((_, i) => i !== index);
-    setProductDetails({ ...productDetails, tags: updatedTags });
-  };
-
-  const tagChangeHandler = (index, value) => {
-    const updatedTags = [...productDetails.tags];
-    updatedTags[index] = value;
-    setProductDetails({ ...productDetails, tags: updatedTags });
-  };
-
-  const formatPrice = (price) => {
-    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "đ";
+  const variantImageHandler = (e, index) => {
+    const file = e.target.files[0];
+    if (file) {
+      const updatedVariants = [...productDetails.variants];
+      updatedVariants[index].image = file;
+      setProductDetails({ ...productDetails, variants: updatedVariants });
+    }
   };
 
   const saveProduct = async () => {
-    let responseData;
+    const { name, category, new_price, old_price, variants, tags, available, shortDescription } = productDetails;
+
+    // Check if all required fields are filled
+    if (!name || !category || !new_price || !old_price || variants.length === 0 || !tags || !shortDescription) {
+      setErrorMessage("All fields are required");
+      return;
+    }
+
+    // Check if new_price and old_price are numbers
+    if (isNaN(new_price) || isNaN(old_price)) {
+      setErrorMessage("New price and old price must be numbers");
+      return;
+    }
+
+    // Check if shortDescription is within the character limit
+    if (shortDescription.length > 50) {
+      setErrorMessage("Short description must be 50 characters or less");
+      return;
+    }
+
     let product = productDetails;
 
-    if (image) {
-      let formData = new FormData();
-      formData.append("product", image);
+    // Upload images for each variant
+    for (let i = 0; i < product.variants.length; i++) {
+      const variant = product.variants[i];
+      if (variant.image instanceof File) {
+        let formData = new FormData();
+        formData.append("product", variant.image);
 
-      await fetch("http://localhost:4000/upload", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-        },
-        body: formData,
-      })
-        .then((resp) => resp.json())
-        .then((data) => (responseData = data));
-
-      if (responseData.success) {
-        product.image = responseData.image_url;
+        const response = await fetch("http://localhost:4000/upload", {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+          },
+          body: formData,
+        });
+        const data = await response.json();
+        if (data.success) {
+          variant.image = data.image_url;
+        } else {
+          setErrorMessage("Failed to upload image for variant");
+          return;
+        }
       }
     }
 
@@ -114,13 +124,14 @@ const EditProduct = () => {
           alert("Product updated successfully");
           navigate("/listproduct");
         } else {
-          alert("Update failed");
+          setErrorMessage(data.message);
         }
       });
   };
 
   return (
     <div className="p-8 box-border bg-white w-full rounded-sm mt-4 lg:m-7">
+      {errorMessage && <div className="text-red-500 mb-4">{errorMessage}</div>}
       <div className="mb-3">
         <h4 className="bold-18 pb-2">Product title:</h4>
         <input
@@ -150,6 +161,17 @@ const EditProduct = () => {
           onChange={changeHandler}
           type="text"
           name="new_price"
+          placeholder="Type here.."
+          className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
+        />
+      </div>
+      <div className="mb-3">
+        <h4 className="bold-18 pb-2">Short Description:</h4>
+        <input
+          value={productDetails.shortDescription}
+          onChange={changeHandler}
+          type="text"
+          name="shortDescription"
           placeholder="Type here.."
           className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
         />
@@ -202,6 +224,19 @@ const EditProduct = () => {
               placeholder="Quantity"
               className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
             />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => variantImageHandler(e, index)}
+              className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
+            />
+            {variant.image && (
+              <img
+                src={variant.image instanceof File ? URL.createObjectURL(variant.image) : variant.image}
+                alt="Variant"
+                className="w-20 rounded-sm"
+              />
+            )}
             <button onClick={() => removeVariant(index)} className="btn_dark_rounded flexCenter gap-x-1">
               <MdRemove />
             </button>
@@ -213,24 +248,23 @@ const EditProduct = () => {
       </div>
       <div className="mb-3">
         <h4 className="bold-18 pb-2">Tags:</h4>
-        {productDetails.tags.map((tag, index) => (
-          <div key={index} className="mb-3 flex items-center gap-x-4">
-            <input
-              value={tag}
-              onChange={(e) => tagChangeHandler(index, e.target.value)}
-              type="text"
-              name={`tag-${index}`}
-              placeholder="Tag"
-              className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
-            />
-            <button onClick={() => removeTag(index)} className="btn_dark_rounded flexCenter gap-x-1">
-              <MdRemove />
-            </button>
-          </div>
-        ))}
-        <button onClick={addTag} className="btn_dark_rounded flexCenter gap-x-1">
-          <MdAdd /> Add Tag
-        </button>
+        <select
+          name="tags"
+          className="bg-primary ring-1 ring-slate-900/20 medium-16 rounded-sm outline-none"
+          value={productDetails.tags}
+          onChange={changeHandler}
+        >
+          <option value="">Select Tag</option>
+          <option value="Sport">Sport</option>
+          <option value="Casual">Casual</option>
+          <option value="Office">Office</option>
+          <option value="Party">Party</option>
+          <option value="OutDoor">OutDoor</option>
+          <option value="Loungewear">Loungewear</option>
+          <option value="Sleepwear">Sleepwear</option>
+          <option value="Swimwear">Swimwear</option>
+          <option value="Lingerie">Lingerie</option>
+        </select>
       </div>
       <div className="mb-3 flex items-center gap-x-4">
         <h4 className="bold-18 pb-2">Available:</h4>
@@ -244,30 +278,10 @@ const EditProduct = () => {
           <option value="false">No</option>
         </select>
       </div>
-      <div className="mb-3 flex items-center gap-x-4">
-        <img
-          src={image ? URL.createObjectURL(image) : productDetails.image || upload_area}
-          alt=""
-          className="w-20 rounded-sm inline-block"
-        />
-        <button
-          onClick={() => document.getElementById('file-input').click()}
-          className="btn_dark_rounded flexCenter gap-x-1"
-        >
-          Change Image
-        </button>
-      </div>
-      <input
-        onChange={imageHandler}
-        type="file"
-        name="image"
-        id="file-input"
-        hidden
-        className="bg-primary max-w-80 w-full py-3 px-4"
-      />
       <button onClick={saveProduct} className="btn_dark_rounded mt-4 flexCenter gap-x-1">
         <MdSave /> Save Product
       </button>
+      {errorMessage && <div className="text-red-500 font-bold mt-4">{errorMessage}</div>}
     </div>
   );
 };

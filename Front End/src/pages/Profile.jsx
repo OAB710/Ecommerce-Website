@@ -174,6 +174,7 @@ const Profile = () => {
           }
         })
         .catch((error) => console.error("Error deleting account:", error));
+
     }
   };
 

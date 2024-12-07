@@ -84,13 +84,16 @@ const ListProduct = () => {
             {allProducts.map((product, i) => (
               <tr key={i} className="border-b border-slate-900/20 text-gray-20 p-6 medium-14" style={{ height: '6em' }}>
                 <td className="flexStart sm:flexCenter">
-                  <img
-                    src={product.image}
-                    alt=""
-                    height={43}
-                    width={43}
-                    className="rounded-lg ring-1 ring-slate-900/5 my-1"
-                  />
+                  {product.variants.map((variant, index) => (
+                    <img
+                      key={index}
+                      src={variant.image}
+                      alt=""
+                      height={43}
+                      width={43}
+                      className="rounded-lg ring-1 ring-slate-900/5 my-1"
+                    />
+                  ))}
                 </td>
                 <td>
                   <div className="line-clamp-3">{product.name}</div>
@@ -103,7 +106,7 @@ const ListProduct = () => {
                 <td>{calculateTotalQuantity(product.variants)}</td>
                 <td>{new Date(product.date).toLocaleDateString()}</td>
                 <td className={product.available ? "text-green-500" : ""}>{product.available ? "Yes" : "No"}</td>
-                <td>{product.tags.join(', ')}</td>
+                <td>{product.tags ? product.tags : 'No Tag'}</td>
                 <td>
                   <button
                     onClick={() => edit_product(product.id)}
