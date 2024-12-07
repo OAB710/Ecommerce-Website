@@ -53,7 +53,9 @@ const CartItems = () => {
             console.error("Error fetching order details:", data.message);
           }
         })
-        .catch((error) => console.error("Error fetching order details:", error));
+        .catch((error) =>
+          console.error("Error fetching order details:", error)
+        );
     }
   }, [location.state]);
 
@@ -87,7 +89,9 @@ const CartItems = () => {
     );
   }
 
+    // Front End/src/components/CartItems.jsx
   const handleOrder = async () => {
+    navigate("/orders");
     const orderData = {
       products: Object.keys(cartItems).map((key) => {
         const [productId, size, color] = key.split("_");
@@ -99,7 +103,7 @@ const CartItems = () => {
           name: product.name,
           category: product.category,
           tags: product.tags,
-          variant: { size, color },
+          variants: { size, color },
           quantity: cartItems[key],
           price: product.new_price,
           shortDescription: product.shortDescription,
@@ -113,7 +117,7 @@ const CartItems = () => {
       email: user.email,
       note: orderDetails.note, // Add note field
     };
-
+  
     const response = await fetch("http://localhost:4000/addorder", {
       method: "POST",
       headers: {
@@ -123,11 +127,23 @@ const CartItems = () => {
       },
       body: JSON.stringify(orderData),
     });
-
+  
     const data = await response.json();
     if (data.success) {
       alert("Order placed successfully!");
-      navigate("/orders");
+  
+      // Clear cart items in database
+      await fetch("http://localhost:4000/clearcart", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "auth-token": localStorage.getItem("auth-token"),
+        },
+      });
+      window.location.reload();
+      setCartItems({}); // Clear cart items in state
+      
     } else {
       alert("Failed to place order: " + data.message);
     }
@@ -135,7 +151,7 @@ const CartItems = () => {
 
   return (
     <section className="max_padd_container pt-28 mt-2">
-      <table className="w-full mx-auto mt-16" style={{ marginTop: '4.5rem' }}>
+      <table className="w-full mx-auto mt-16" style={{ marginTop: "4.5rem" }}>
         <thead>
           <tr>
             <th className="p-1 py-2">Products</th>
@@ -144,7 +160,7 @@ const CartItems = () => {
             <th className="p-1 py-2">Size</th>
             <th className="p-1 py-2">Color</th>
             <th className="p-1 py-2">Quantity</th>
-            <th className="p-1 py-2">Remove</th>
+            <th className="p-1 py-2">Total</th>
           </tr>
         </thead>
         <tbody>
@@ -171,7 +187,7 @@ const CartItems = () => {
                   <td>
                     <div className="line-clamp-3">{product.name}</div>
                   </td>
-                  <td>${product.new_price}</td>
+                  <td>{product.new_price} đ</td>
                   <td>{size}</td>
                   <td>{color}</td>
                   <td>
@@ -215,7 +231,7 @@ const CartItems = () => {
                       }}
                     />
                   </td>
-                  <td>${(product.new_price * cartItems[key]).toFixed(2)}</td>
+                  <td>{product.new_price * cartItems[key]} đ</td>
                   <td>
                     <div className="bold-22 pl-14">
                       <TbTrash
@@ -259,13 +275,23 @@ const CartItems = () => {
                 <div className="flexBetween py-4">
                   <h4 className="medium-16">Subtotal:</h4>
                   <h4 className="text-gray-30 font-semibold">
-                    ${getTotalCartAmount()}
+                    {getTotalCartAmount()} đ
                   </h4>
                 </div>
                 <hr />
                 <div className="flexBetween py-4">
                   <h4 className="medium-16">Shipping Fee:</h4>
-                  <h4 className="text-gray-30 font-semibold">Free</h4>
+
+                  {getTotalCartAmount() > 399000 ? (
+                    <h4 className="text-gray-30 font-semibold">
+                      <span className="font-bold text-black mr-2">
+                        Free Shipping{" "}
+                      </span>{" "}
+                      <span className="line-through">20000 đ</span>
+                    </h4>
+                  ) : (
+                    <h4 className="text-gray-30 font-semibold">20000 đ</h4>
+                  )}
                 </div>
                 <hr />
                 {discount > 0 && (
@@ -273,7 +299,7 @@ const CartItems = () => {
                     <div className="flexBetween py-4">
                       <h4 className="medium-16">Discount:</h4>
                       <h4 className="text-gray-30 font-semibold">
-                        ${discount}
+                        {discount} đ
                       </h4>
                     </div>
                     <hr />
@@ -282,9 +308,12 @@ const CartItems = () => {
                 <div className="flexBetween py-4">
                   <h4 className="bold-18">Total:</h4>
                   <h4 className="bold-18">
-                    ${Math.max(0, getTotalCartAmount() - discount)}
+                    {Math.max(0, getTotalCartAmount() - discount + (getTotalCartAmount() > 399000 ? 0 : 20000))} đ
                   </h4>
                 </div>
+              </div>
+              <div className="-mt-10 flexBetween py-4 font-bold underline text-red-500">
+                Free shipping nationwide with bills over 399,000 đ
               </div>
               <div className="flex flex-col gap-10">
                 <h4 className="bold-20 capitalize">

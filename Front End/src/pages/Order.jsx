@@ -28,6 +28,32 @@ const Order = () => {
     fetchOrders();
   }, []);
 
+  const handleCancelOrder = async (orderId) => {
+    try {
+      const response = await fetch(`http://localhost:4000/updateorderstatus/${orderId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'Cancel' }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order._id === orderId ? { ...order, status: 'Cancel' } : order
+          )
+        );
+        alert('Order cancelled successfully');
+      } else {
+        alert('Failed to cancel order: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      alert('An error occurred while cancelling the order');
+    }
+  };
+
   const handleViewDetails = (orderId) => {
     navigate(`/order/${orderId}`);
   };
@@ -49,6 +75,14 @@ const Order = () => {
               >
                 View Details
               </button>
+              {order.status === 'pending' && (
+                <button
+                  className="ml-2 mt-2 bg-red-200 text-red-800 px-4 py-2 rounded"
+                  onClick={() => handleCancelOrder(order._id)}
+                >
+                  Cancel Order
+                </button>
+              )}
             </div>
           ))}
         </div>

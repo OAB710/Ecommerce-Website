@@ -312,6 +312,10 @@ const Order = mongoose.model('Order', {
   products: [
     {
       product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+      variants: {
+        size: String,
+        color: String,
+      },
       name: String,
       quantity: Number,
       price: Number,
@@ -970,7 +974,7 @@ app.post('/addorder', async (req, res) => {
       user: user._id,
       products: products.map(product => ({
         product: product.product,
-        variant: product.variant,
+        variants: product.variants,
         quantity: product.quantity,
         price: product.price,
         name: product.name,
@@ -1033,6 +1037,23 @@ app.post('/updateorderstatus/:id', async (req, res) => {
   } catch (error) {
     console.error("Error updating order status:", error);
     res.status(500).json({ success: false, message: "An error occurred while updating the order status" });
+  }
+});
+
+app.post('/clearcart', fetchUser, async (req, res) => {
+  try {
+    const userData = await User.findById(req.user.id);
+    if (userData) {
+      userData.cartData = {}; // Clear cart data
+      userData.markModified('cartData');
+      await userData.save();
+      res.json({ success: true, message: "Cart cleared successfully" });
+    } else {
+      res.status(404).json({ success: false, message: "User not found" });
+    }
+  } catch (error) {
+    console.error("Error clearing cart:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
 

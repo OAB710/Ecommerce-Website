@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 const OrderDetail = () => {
   const { orderId } = useParams();
@@ -7,21 +7,17 @@ const OrderDetail = () => {
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
-      try {
-        const response = await fetch(`http://localhost:4000/order/${orderId}`, {
-          method: "GET",
-          headers: {
-            "auth-token": localStorage.getItem("auth-token"),
-          },
-        });
-        const data = await response.json();
-        if (data.success) {
-          setOrderDetails(data.order);
-        } else {
-          console.error("Failed to fetch order details:", data.message);
-        }
-      } catch (error) {
-        console.error("Error fetching order details:", error);
+      const response = await fetch(`http://localhost:4000/order/${orderId}`, {
+        method: 'GET',
+        headers: {
+          'auth-token': localStorage.getItem('auth-token'),
+        },
+      });
+      const data = await response.json();
+      if (data.success) {
+        setOrderDetails(data.order);
+      } else {
+        console.error('Error fetching order details:', data.message);
       }
     };
 
@@ -33,47 +29,27 @@ const OrderDetail = () => {
   }
 
   return (
-    <div className="p-8 box-border bg-white w-full rounded-sm mt-4 lg:m-7">
-      <h4 className="bold-22 uppercase">Order Details</h4>
-      <div className="mb-3">
-        <h4 className="bold-18 pb-2">Buyer's Name:</h4>
-        <p>{orderDetails.name}</p>
-      </div>
-      <div className="mb-3">
-        <h4 className="bold-18 pb-2">Purchase Time:</h4>
-        <p>{new Date(orderDetails.date).toLocaleString()}</p>
-      </div>
-      <div className="mb-3">
-        <h4 className="bold-18 pb-2">Total Amount:</h4>
-        <p>{orderDetails.total} đ</p>
-      </div>
-      <div className="mb-3">
-        <h4 className="bold-18 pb-2">Order Status:</h4>
-        <p>{orderDetails.status}</p>
-      </div>
-      <div className="mt-4">
-        <h4 className="bold-18 pb-2">Products:</h4>
-                <ul>
+    <div className="mt-[4.5rem] bg-gray-100 mt-5" style={{backgroundColor:"#F3F4F6"}}>
+      <div className="max-w-5xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-4">ID: {orderDetails._id}</h1>
+        <p className="mb-2">Date: {new Date(orderDetails.date).toLocaleDateString()}</p>
+        <p className="mb-6">Status: {orderDetails.status}</p>
+
+        <h2 className="text-xl font-semibold mb-4">Order Details</h2>
+        <div className="mb-6">
           {orderDetails.products.map((product, index) => (
-            <li key={index} className="mb-2">
-              <div className="flex justify-between">
-                <div>
-                  <p className="font-bold">{product.name}</p>
-                  <p>Quantity: {product.quantity}</p>
-                </div>
-                <div>
-                  <p>{product.price} đ</p>
-                </div>
-              </div>
-            </li>
+            <div key={index} className="flex justify-between border-b-2 py-2">
+              <span>{product.name} / {product.variants.size} ({product.variants.color})</span>
+              <span>{product.price} đ</span>
+              <span>{product.quantity}</span>
+              <span>{product.price * product.quantity} đ</span>
+            </div>
           ))}
-        </ul>
-      </div>
-      <div className="mt-4">
-        <h4 className="bold-18 pb-2">Summary:</h4>
-        <div className="flex justify-between">
-          <p className="font-bold">Total:</p>
-          <p>{orderDetails.total} đ</p>
+        </div>
+        <h2 className="text-xl font-semibold mb-4">Bill</h2>
+        <div className="flex justify-between border-b-2 py-2">
+          <span>Total:</span>
+          <span>{orderDetails.total} đ</span>
         </div>
       </div>
     </div>
