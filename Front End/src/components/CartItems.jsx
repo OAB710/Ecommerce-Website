@@ -1,10 +1,11 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { ShopContext } from "../Context/ShopContext";
 import { TbTrash } from "react-icons/tb";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const CartItems = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     all_products,
     cartItems,
@@ -12,14 +13,29 @@ const CartItems = () => {
     getTotalCartAmount,
     updateCartQuantity,
     applyCoupon,
-    discount, // Thêm dòng này
+    discount,
     user,
   } = useContext(ShopContext);
 
   const [couponCode, setCouponCode] = useState("");
+  const [orderDetails, setOrderDetails] = useState({
+    name: user.name,
+    contact: user.contact,
+    address: user.address,
+  });
+
+  useEffect(() => {
+    if (location.state) {
+      setOrderDetails({
+        name: location.state.name,
+        contact: location.state.contact,
+        address: location.state.address,
+      });
+    }
+  }, [location.state]);
 
   const handleChooseDeliveryAddress = () => {
-    navigate("/delivery", { state: { name: user.name, contact: user.contact, address: user.address } });
+    navigate("/choosedeli", { state: { name: orderDetails.name, contact: orderDetails.contact, address: orderDetails.address } });
   };
 
   if (!Array.isArray(all_products) || all_products.length === 0) {
@@ -43,8 +59,8 @@ const CartItems = () => {
   }
 
   return (
-    <section className="max_padd_container pt-28">
-      <table className="w-full mx-auto">
+    <section className="max_padd_container pt-28 mt-2">
+      <table className="w-full mx-auto mt-16">
         <thead>
           <tr>
             <th className="p-1 py-2">Products</th>
@@ -177,7 +193,7 @@ const CartItems = () => {
                   <h4 className="text-gray-30 font-semibold">Free</h4>
                 </div>
                 <hr />
-                {discount > 0 && ( // Thêm đoạn này
+                {discount > 0 && (
                   <>
                     <div className="flexBetween py-4">
                       <h4 className="medium-16">Discount:</h4>
@@ -233,7 +249,7 @@ const CartItems = () => {
                 <input
                   type="text"
                   className="w-full p-2 border border-gray-300"
-                  value={user.name}
+                  value={orderDetails.name}
                   required={true}
                 />
               </div>
@@ -242,7 +258,7 @@ const CartItems = () => {
                 <input
                   type="text"
                   className="w-full p-2 border border-gray-300"
-                  value={user.contact}
+                  value={orderDetails.contact}
                   required={true}
                 />
               </div>
@@ -251,7 +267,7 @@ const CartItems = () => {
                 <input
                   type="text"
                   className="w-full p-2 border border-gray-300"
-                  value={user.address}
+                  value={orderDetails.address}
                   required={true}
                 />
               </div>

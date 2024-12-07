@@ -69,7 +69,7 @@ const ListUser = () => {
                 <td className="py-4">{user.name}</td>
                 <td className="py-4">{user.email}</td>
                 <td className="py-4">{user.phone}</td>
-                <td className="py-4">{user.address.join(', ')}</td>
+                <td className="py-4">{Array.isArray(user.address) ? user.address.join(', ') : user.address}</td>
                 <td className="py-4">{user.role}</td>
                 <td className={`py-4 ${user.isBanned ? 'text-red-500' : 'text-green-500'}`}>
                   {user.isBanned ? "Yes" : "No"}

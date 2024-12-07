@@ -45,6 +45,13 @@ const Delivery = () => {
     navigate("/adddele");
   };
 
+const chooseDeli = (index) => {
+  const selectedDeli = addresses[index];
+
+  // Navigate to the cart page with selected delivery information
+  navigate('/cart-page', { state: { name: selectedDeli.name, contact: selectedDeli.contact, address: selectedDeli.address } });
+};
+
   return (
     <div className="bg-gray-100 min-h-screen mt-5">
       <div className="max-w-4xl mx-auto p-4 mt-16">
@@ -62,7 +69,7 @@ const Delivery = () => {
             <p className="text-gray-600">{address.address}</p>
             <button
               className="mt-2 bg-green-200 text-green-800 px-4 py-2 rounded"
-              onClick={() => handleEdit(index)}
+              onClick={() => chooseDeli(index)}
             >
               Choose This Delivery
             </button>

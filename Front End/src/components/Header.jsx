@@ -86,9 +86,6 @@ const Header = () => {
                 {getTotalCartItems()}
               </span>
             </NavLink>
-            <NavLink to={"profile"} className={"flex"}>
-              <img src={userIcon} alt="User Icon" className="h-8 w-8 rounded-full" />
-            </NavLink>
             {localStorage.getItem("auth-token") ? (
               <>
                 <NavLink to="profile" className="flex">

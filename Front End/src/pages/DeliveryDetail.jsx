@@ -103,20 +103,20 @@ const DeliveryDetail = () => {
               required
             />
           </div>
-          <div className="flex space-x-2">
+          <div className="flex space">
             <button
               type="submit"
               className="w-full px-4 py-2 bg-blue-500 text-white font-bold rounded"
             >
               SAVE CHANGES
             </button>
-            <button
+            {/* <button
               type="button"
               onClick={() => navigate("/delivery")}
               className="w-full px-4 py-2 border border-black text-black font-bold rounded"
             >
               RETURN
-            </button>
+            </button> */}
           </div>
         </form>
       </div>

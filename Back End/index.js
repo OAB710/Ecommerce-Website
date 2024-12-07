@@ -513,43 +513,43 @@ app.get('/allproducts', async (req, res) => {
 
 app.post('/signup', async (req, res) => {
   try {
-    // Kiểm tra xem email đã tồn tại chưa
-    let check = await User.findOne({ email: req.body.email });
-    if (check) {
-      return res.status(400).json({ 
-        success: false, 
-        errors: "Existing user found with same email address" 
+    console.log("Request body:", req.body);
+
+    let existingUser = await User.findOne({ email: req.body.email });
+    if (existingUser) {
+      console.log("Existing user found:", existingUser);
+      return res.status(400).json({
+        success: false,
+        errors: "Existing user found with same email address"
       });
     }
 
-    // Tạo người dùng mới với dữ liệu từ yêu cầu
     const user = new User({
-      name: req.body.username,
+      name: req.body.name, // Đảm bảo rằng trường name được lấy đúng cách
       email: req.body.email,
       password: req.body.password,
       phone: req.body.phone,
       address: req.body.address,
-      addresses: req.body.addresses || [], // Thêm trường addresses
-      role: req.body.role || 'customer', // Mặc định là 'customer' nếu không có role
+      addresses: req.body.addresses || [],
+      role: req.body.role || 'customer',
       LoyaltyPoints: req.body.LoyaltyPoints || 0,
       LoyaltyTicker: req.body.LoyaltyTicker || 0,
       isBanned: req.body.isBanned || false,
-      cartData: {} // Khởi tạo cartData như một đối tượng rỗng
+      cartData: req.body.cartData || {}
     });
 
-    // Lưu người dùng mới vào cơ sở dữ liệu
+    console.log("New user:", user);
+
     await user.save();
 
-    // Tạo token JWT cho người dùng
     const data = {
       user: {
-        id: user._id // Sử dụng user._id để truy cập ID của người dùng
+        id: user._id
       }
     };
     
     const token = jwt.sign(data, 'secret_ecom'); 
     
-    // Trả về phản hồi thành công với token
     res.json({ success: true, token });
   } catch (error) {
     console.error("Error during signup:", error);
