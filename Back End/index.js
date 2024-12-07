@@ -1452,6 +1452,39 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// app.post('/forgotpassword', async (req, res) => {
+//   const { email } = req.body;
+//   if (!email) {
+//     return res.status(400).json({ success: false, message: "Email is required" });
+//   }
+
+//   try {
+//     const user = await User.findOne({ email });
+//     if (!user) {
+//       return res.status(404).json({ success: false, message: "User not found" });
+//     }
+
+//     const otp = crypto.randomBytes(6).toString('hex').toUpperCase();
+//     user.resetPasswordToken = otp;
+//     await user.save();
+
+//     // Send the New Password to the user's email
+//     const mailOptions = {
+//       to: user.email,
+//       from: process.env.EMAIL_USER,
+//       subject: 'Password Reset from Shopping cart',
+//       text: `Your new Password is: ${otp}\n\n\n`,
+//     };
+
+//     await transporter.sendMail(mailOptions);
+
+//     res.json({ success: true, message: "New password created successfully" });
+//   } catch (error) {
+//     console.error("Error sending OTP email:", error);
+//     res.status(500).json({ success: false, message: "An error occurred while sending email" });
+//   }
+// });
+
 app.post('/forgotpassword', async (req, res) => {
   const { email } = req.body;
   if (!email) {
@@ -1464,29 +1497,24 @@ app.post('/forgotpassword', async (req, res) => {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Generate a 6-character OTP
-    const otp = crypto.randomBytes(3).toString('hex').toUpperCase();
-    user.resetPasswordToken = otp;
-    user.resetPasswordExpires = Date.now() + 300000; // 5 minutes
+    const otp = crypto.randomBytes(6).toString('hex').toUpperCase();
+    user.password = otp; // Lưu OTP làm mật khẩu mới
     await user.save();
 
-    // Send the OTP email
+    // Send the New Password to the user's email
     const mailOptions = {
       to: user.email,
-      from: process.env.EMAIL_USER,
-      subject: 'Password Reset OTP from Shopping cart',
-      text: `.\n\n
-      Your OTP is: ${otp}\n\n
-      This OTP is valid for 5 minutes.\n\n
-      If you did not request this, please ignore this email and your password will remain unchanged.\n`,
+      from: 'trungductwice@gmail.com',
+      subject: 'Password Reset from Shopping cart',
+      text: `Your new Password is: ${otp}\n\n\n`,
     };
 
     await transporter.sendMail(mailOptions);
 
-    res.json({ success: true, message: "OTP sent successfully" });
+    res.json({ success: true, message: "New password created successfully" });
   } catch (error) {
     console.error("Error sending OTP email:", error);
-    res.status(500).json({ success: false, message: "An error occurred while sending the OTP email" });
+    res.status(500).json({ success: false, message: "An error occurred while sending email" });
   }
 });
 
@@ -1505,7 +1533,7 @@ app.post('/updateprofile', async (req, res) => {
     user.phone = phone;
     user.address = address;
     await user.save();
-
+    
     res.json({ success: true, message: "Profile updated successfully" });
   } catch (error) {
     console.error("Error updating profile:", error);
@@ -1612,5 +1640,26 @@ app.post('/resetpassword', async (req, res) => {
   } catch (error) {
     console.error("Error resetting password:", error);
     res.status(500).json({ success: false, message: "An error occurred while resetting the password" });
+  }
+});
+app.post('/subscribe', async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ success: false, message: "Email is required" });
+  }
+
+  const mailOptions = {
+    to: email,
+    from: 'trungductwice@gmail.com',
+    subject: 'Subscription Successful',
+    text: 'You have successfully subscribed to our newsletter!',
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    res.json({ success: true, message: "Subscription email sent successfully" });
+  } catch (error) {
+    console.error("Error sending subscription email:", error);
+    res.status(500).json({ success: false, message: "An error occurred while sending the subscription email" });
   }
 });
