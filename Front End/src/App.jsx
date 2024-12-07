@@ -22,6 +22,7 @@ import Delivery from "./pages/Delivery";
 import DeliveryDetail from "./pages/DeliveryDetail";
 import AddDele from "./pages/AddDele";
 import ChooseDeli from "./pages/ChooseDeli";
+import OrderDetail from './pages/OrderDetail';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="/delivery-detail/:index" element={<DeliveryDetail />} />
           <Route path="/adddele" element={<AddDele />} />
           <Route path="/choosedeli" element={<ChooseDeli />} />
+          <Route path="/order/:orderId" element={<OrderDetail />} />
         </Routes>
         <Footer />
       </BrowserRouter>

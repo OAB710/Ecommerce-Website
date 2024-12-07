@@ -312,7 +312,7 @@ const Order = mongoose.model('Order', {
   products: [
     {
       product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
-      
+      name: String,
       quantity: Number,
       price: Number,
     },
@@ -943,7 +943,7 @@ app.post('/edituser/:id', async (req, res) => {
 
 app.post('/addorder', async (req, res) => {
   try {
-    const { products, total, shippingAddress, paymentMethod, name, phone, email } = req.body;
+    const { products, total, shippingAddress, paymentMethod, name, phone, email, note } = req.body;
     let user;
 
     if (req.header('auth-token')) {
@@ -968,10 +968,19 @@ app.post('/addorder', async (req, res) => {
 
     const order = new Order({
       user: user._id,
-      products,
+      products: products.map(product => ({
+        product: product.product,
+        variant: product.variant,
+        quantity: product.quantity,
+        price: product.price,
+        name: product.name,
+      })),
       total,
       shippingAddress,
       paymentMethod,
+      name, // Include name from orderDetails
+      phone, // Include contact from orderDetails
+      note, // Add note field
     });
 
     await order.save();
@@ -1001,6 +1010,7 @@ app.get('/allorders', async (req, res) => {
     const totalOrders = await Order.countDocuments(query);
 
     res.json({
+      success: true,
       orders,
       totalPages: Math.ceil(totalOrders / limit),
       currentPage: Number(page),
@@ -1030,13 +1040,32 @@ app.get('/order/:id', async (req, res) => {
   try {
     const order = await Order.findById(req.params.id).populate('user', 'name');
     if (order) {
-      res.json(order);
+      res.json({ success: true, order });
     } else {
       res.status(404).json({ success: false, message: "Order not found" });
     }
   } catch (error) {
     console.error("Error fetching order:", error);
     res.status(500).json({ success: false, message: "An error occurred while fetching the order" });
+  }
+});
+app.get('/getorderdetails', fetchUser, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const orderDetails = {
+      name: user.name,
+      contact: user.phone,
+      address: user.address,
+    };
+
+    res.json({ success: true, ...orderDetails });
+  } catch (error) {
+    console.error("Error fetching order details:", error);
+    res.status(500).json({ success: false, message: "An error occurred while fetching order details" });
   }
 });
 

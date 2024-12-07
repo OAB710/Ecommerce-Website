@@ -24,6 +24,8 @@ const CartItems = () => {
     address: user.address,
   });
 
+  const [paymentMethod, setPaymentMethod] = useState("COD");
+
   useEffect(() => {
     if (location.state) {
       setOrderDetails({
@@ -31,11 +33,38 @@ const CartItems = () => {
         contact: location.state.contact,
         address: location.state.address,
       });
+    } else {
+      // Fetch order details if not available in location.state
+      fetch("http://localhost:4000/getorderdetails", {
+        method: "GET",
+        headers: {
+          "auth-token": localStorage.getItem("auth-token"),
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            setOrderDetails({
+              name: data.name,
+              contact: data.contact,
+              address: data.address,
+            });
+          } else {
+            console.error("Error fetching order details:", data.message);
+          }
+        })
+        .catch((error) => console.error("Error fetching order details:", error));
     }
   }, [location.state]);
 
   const handleChooseDeliveryAddress = () => {
-    navigate("/choosedeli", { state: { name: orderDetails.name, contact: orderDetails.contact, address: orderDetails.address } });
+    navigate("/choosedeli", {
+      state: {
+        name: orderDetails.name,
+        contact: orderDetails.contact,
+        address: orderDetails.address,
+      },
+    });
   };
 
   if (!Array.isArray(all_products) || all_products.length === 0) {
@@ -58,9 +87,55 @@ const CartItems = () => {
     );
   }
 
+  const handleOrder = async () => {
+    const orderData = {
+      products: Object.keys(cartItems).map((key) => {
+        const [productId, size, color] = key.split("_");
+        const product = all_products.find(
+          (p) => p.id === Number(productId) || p.id === productId
+        );
+        return {
+          product: productId,
+          name: product.name,
+          category: product.category,
+          tags: product.tags,
+          variant: { size, color },
+          quantity: cartItems[key],
+          price: product.new_price,
+          shortDescription: product.shortDescription,
+        };
+      }),
+      total: getTotalCartAmount() - discount,
+      shippingAddress: orderDetails.address,
+      paymentMethod: paymentMethod === "COD" ? "COD" : "Banking",
+      name: orderDetails.name,
+      phone: orderDetails.contact,
+      email: user.email,
+      note: orderDetails.note, // Add note field
+    };
+
+    const response = await fetch("http://localhost:4000/addorder", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "auth-token": localStorage.getItem("auth-token"),
+      },
+      body: JSON.stringify(orderData),
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      alert("Order placed successfully!");
+      navigate("/orders");
+    } else {
+      alert("Failed to place order: " + data.message);
+    }
+  };
+
   return (
     <section className="max_padd_container pt-28 mt-2">
-      <table className="w-full mx-auto mt-16">
+      <table className="w-full mx-auto mt-16" style={{ marginTop: '4.5rem' }}>
         <thead>
           <tr>
             <th className="p-1 py-2">Products</th>
@@ -236,7 +311,7 @@ const CartItems = () => {
           <div className="w-full md:w-1/2 p-4 bg-white">
             <h2 className="text-xl font-bold mb-4">ORDER DETAIL</h2>
             <button
-              className="mb-4 w-full h-7 text-white rounded
+              className="mb-4 w-full h-10 text-white rounded
               bg-yellow-500 text-white"
               onClick={handleChooseDeliveryAddress}
               style={{ backgroundColor: "#292C27" }}
@@ -250,6 +325,9 @@ const CartItems = () => {
                   type="text"
                   className="w-full p-2 border border-gray-300"
                   value={orderDetails.name}
+                  onChange={(e) =>
+                    setOrderDetails({ ...orderDetails, name: e.target.value })
+                  }
                   required={true}
                 />
               </div>
@@ -259,6 +337,12 @@ const CartItems = () => {
                   type="text"
                   className="w-full p-2 border border-gray-300"
                   value={orderDetails.contact}
+                  onChange={(e) =>
+                    setOrderDetails({
+                      ...orderDetails,
+                      contact: e.target.value,
+                    })
+                  }
                   required={true}
                 />
               </div>
@@ -268,26 +352,54 @@ const CartItems = () => {
                   type="text"
                   className="w-full p-2 border border-gray-300"
                   value={orderDetails.address}
+                  onChange={(e) =>
+                    setOrderDetails({
+                      ...orderDetails,
+                      address: e.target.value,
+                    })
+                  }
                   required={true}
                 />
               </div>
               <div className="mb-4">
-                <label className="block mb-2">Note</label>{" "}
-                <textarea className="w-full p-2 border border-gray-300"></textarea>
+                <label className="block mb-2">Note</label>
+                <textarea
+                  className="w-full p-2 border border-gray-300"
+                  value={orderDetails.note}
+                  onChange={(e) =>
+                    setOrderDetails({ ...orderDetails, note: e.target.value })
+                  }
+                ></textarea>
               </div>
               <div className="mb-4">
-                <label className="block mb-2">Payment method</label>
-                <div className="flex items-center mb-2">
-                  <input type="radio" name="payment" className="mr-2" checked />
-                  <label>Cash on Delivery (COD)</label>
-                </div>
-                <div className="flex items-center">
-                  <input type="radio" name="payment" className="mr-2" />
-                  <label>Pay with MoMo wallet</label>
-                </div>
+                <label>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="COD"
+                    checked={paymentMethod === "COD"}
+                    onChange={() => setPaymentMethod("COD")}
+                  />
+                  <span className="ml-2">Cash on Delivery (COD)</span>
+                </label>
+              </div>
+              <div className="mb-4">
+                <label>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="Banking"
+                    checked={paymentMethod === "Banking"}
+                    onChange={() => setPaymentMethod("Banking")}
+                  />
+                  <span className="ml-2">Banking (Bank / Momo)</span>
+                </label>
               </div>
               <div className="flex flex-col md:flex-row">
-                <button className="w-full md:w-auto bg-teal-500 text-white p-2 mb-2 md:mb-0 md:mr-2">
+                <button
+                  className="w-full md:w-auto bg-teal-500 text-white p-2 mb-2 md:mb-0 md:mr-2"
+                  onClick={handleOrder}
+                >
                   ORDER: DELIVERY TO THIS ADDRESS
                 </button>
                 <button
