@@ -1,117 +1,316 @@
+// import React from "react";
+
+// const Profile = () => {
+//   return (
+//     <section className="min-h-screen flex items-center justify-center bg-gray-100 mt-5">
+//       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-2xl mt-20">
+//         <h1 className="text-2xl font-bold mb-6">My Account</h1>
+//         <form>
+//           <div className="mb-4">
+//             <label className="block text-gray-700 font-bold mb-2" htmlFor="name">
+//               Name *
+//             </label>
+//             <input
+//               className="w-full px-3 py-2 border rounded"
+//               id="name"
+//               type="text"
+//               required={true}
+//             />
+//           </div>
+//           {/* <div className="mb-4">
+//             <label className="block text-gray-700 font-bold mb-2" htmlFor="dob">
+//               Date Of Birth (Date/Month/Year)
+//             </label>
+//             <input
+//               className="w-full px-3 py-2 border rounded"
+//               id="dob"
+//               type="text"
+//               required={true}
+//             />
+//           </div> */}
+//           <div className="mb-4">
+//             <label className="block text-red-500 font-bold mb-2" htmlFor="points">
+//               Loyalty Points
+//             </label>
+//             <input
+//               className="w-full px-3 py-2 border rounded bg-gray-200"
+//               id="points"
+//               type="text"
+//               value="- 5 %"
+//               disabled
+//             />
+//           </div>
+//           <div className="mb-4">
+//             <label className="block text-gray-700 font-bold mb-2" htmlFor="email">
+//               Email *
+//             </label>
+//             <input
+//               className="w-full px-3 py-2 border rounded"
+//               id="email"
+//               type="text"
+//               required={true}
+//             />
+//           </div>
+//           <div className="mb-4 flex items-center">
+//             <div className="w-full">
+//               <label className="block text-gray-700 font-bold mb-2" htmlFor="phone">
+//                 Phone *
+//               </label>
+//               <input
+//                 className="w-full px-3 py-2 border rounded"
+//                 id="phone"
+//                 type="text"
+//                 required={true}
+//               />
+//             </div>
+//           </div>
+//           <div className="mb-4">
+//             <label className="block text-gray-700 font-bold mb-2" htmlFor="address">
+//               Address*
+//             </label>
+//             <input
+//               className="w-full px-3 py-2 border rounded"
+//               id="address"
+//               type="text"
+//               required={true}
+//             />
+//           </div>
+//           <div className="flex flex-col space-y-2">
+//             <button className="w-full px-4 py-2 bg-blue-500 text-white font-bold rounded">
+//               UPDATE PROFILE
+//             </button>
+//             <button className="w-full px-4 py-2 bg-gray-500 text-white font-bold rounded">
+//               CHANGE PASSWORD
+//             </button>
+//             <button className="w-full px-4 py-2 border border-black text-black font-bold rounded">
+//               EXIT
+//             </button>
+//             <button className="w-full px-4 py-2 bg-red-500 text-white font-bold rounded">
+//               DELETE ACCOUNT
+//             </button>
+//           </div>
+//         </form>
+//       </div>
+//     </section>
+//   );
+// };
+
+// export default Profile;
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
-  const [user, setUser] = useState({
+  const [profile, setProfile] = useState({
     name: "",
+    LoyaltyPoints: "",
     email: "",
     phone: "",
     address: "",
+    addresses: [], // Thêm dòng này
   });
-  const [editMode, setEditMode] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch user data from the backend
-    const fetchUserData = async () => {
-      const response = await fetch("http://localhost:4000/profile", {
-        headers: {
-          "auth-token": localStorage.getItem("auth-token"),
-        },
-      });
-      const data = await response.json();
-      if (data.success) {
-        setUser(data.user);
-      } else {
-        setErrorMessage(data.message);
-      }
-    };
-
-    fetchUserData();
+    fetch("http://localhost:4000/profile", {
+      method: "GET",
+      headers: {
+        "auth-token": localStorage.getItem("auth-token"),
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+          setProfile(data);
+        }
+      })
+      .catch((error) => console.error("Error fetching profile:", error));
   }, []);
 
-  const handleChange = (e) => {
-    setUser({ ...user, [e.target.name]: e.target.value });
+  const handleManageShipping = () => {
+    navigate("/delivery");
   };
 
-  const handleSave = async () => {
-    const response = await fetch("http://localhost:4000/updateprofile", {
-      method: "POST",
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setProfile((prevProfile) => ({
+      ...prevProfile,
+      [id]: value,
+    }));
+  };
+
+  const handleUpdate = (e) => {
+    e.preventDefault();
+    fetch("http://localhost:4000/profile", {
+      method: "PUT",
       headers: {
-        Accept: "application/json",
         "Content-Type": "application/json",
         "auth-token": localStorage.getItem("auth-token"),
       },
-      body: JSON.stringify(user),
-    });
-    const data = await response.json();
-    if (data.success) {
-      setEditMode(false);
-      setErrorMessage("");
-    } else {
-      setErrorMessage(data.message);
+      body: JSON.stringify(profile),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+          alert("Profile updated successfully!");
+        }
+      })
+      .catch((error) => console.error("Error updating profile:", error));
+  };
+
+  const handleDelete = () => {
+    if (window.confirm("Are you sure you want to delete your account?")) {
+      fetch("http://localhost:4000/profile", {
+        method: "DELETE",
+        headers: {
+          "auth-token": localStorage.getItem("auth-token"),
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.message) {
+            alert(data.message);
+            localStorage.removeItem("auth-token");
+            navigate("/login");
+          }
+        })
+        .catch((error) => console.error("Error deleting account:", error));
+
     }
   };
 
   return (
-    <section className="max_padd_container flexCenter flex-col pt-32">
-      <div className="max-w-[555px] bg-white m-auto px-14 py-10 rounded-md">
-        <h3 className="h3">Profile</h3>
-        {errorMessage && <div className="text-red-500 mb-4">{errorMessage}</div>}
-        <div className="flex flex-col gap-4 mt-7">
-          <input
-            name="name"
-            value={user.name}
-            onChange={handleChange}
-            type="text"
-            placeholder="Your Name"
-            className="h-14 w-full pl-5 bg-slate-900/5 outline-none rounded-xl"
-            disabled={!editMode}
-          />
-          <input
-            name="email"
-            value={user.email}
-            onChange={handleChange}
-            type="email"
-            placeholder="Email Address"
-            className="h-14 w-full pl-5 bg-slate-900/5 outline-none rounded-xl"
-            disabled={!editMode}
-          />
-          <input
-            name="phone"
-            value={user.phone}
-            onChange={handleChange}
-            type="text"
-            placeholder="Phone Number"
-            className="h-14 w-full pl-5 bg-slate-900/5 outline-none rounded-xl"
-            disabled={!editMode}
-          />
-          <input
-            name="address"
-            value={user.address}
-            onChange={handleChange}
-            type="text"
-            placeholder="Address"
-            className="h-14 w-full pl-5 bg-slate-900/5 outline-none rounded-xl"
-            disabled={!editMode}
-          />
-        </div>
-        {editMode ? (
-          <button
-            onClick={handleSave}
-            className="btn_dark_rounded my-5 w-full rounded-md"
-          >
-            Save
-          </button>
-        ) : (
-          <button
-            onClick={() => setEditMode(true)}
-            className="btn_dark_rounded my-5 w-full rounded-md"
-          >
-            Edit Profile
-          </button>
-        )}
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 mt-5">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-2xl mt-20">
+        <h1 className="text-2xl font-bold mb-6">My Account</h1>
+        <form onSubmit={handleUpdate}>
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 font-bold mb-2"
+              htmlFor="name"
+            >
+              Name *
+            </label>
+            <input
+              className="w-full px-3 py-2 border rounded"
+              id="name"
+              type="text"
+              value={profile.name}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label
+              className="block text-red-500 font-bold mb-2"
+              htmlFor="points"
+            >
+              Loyalty Points
+            </label>
+            <input
+              className="w-full px-3 py-2 border rounded bg-gray-200"
+              id="points"
+              type="text"
+              value={profile.LoyaltyPoints}
+              disabled
+            />
+          </div>
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 font-bold mb-2"
+              htmlFor="email"
+            >
+              Email *
+            </label>
+            <input
+              className="w-full px-3 py-2 border rounded"
+              id="email"
+              type="email"
+              value={profile.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="mb-4 flex items-center">
+            <div className="w-full">
+              <label
+                className="block text-gray-700 font-bold mb-2"
+                htmlFor="phone"
+              >
+                Phone *
+              </label>
+              <input
+                className="w-full px-3 py-2 border rounded"
+                id="phone"
+                type="text"
+                value={profile.phone}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 font-bold mb-2"
+              htmlFor="address"
+            >
+              Address *
+            </label>
+            <input
+              className="w-full px-3 py-2 border rounded"
+              id="address"
+              type="text"
+              value={profile.address}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <h1 className="mb-6 text-blue-500">
+            <span
+              style={{ cursor: "pointer" }}
+              className="underline hover:text-red-500"
+              onClick={handleManageShipping}
+            >
+              Click here to manage your shipping information
+            </span>
+          </h1>
+          {/* Code here */}
+          <div className="flex flex-col space-y-2">
+            <div className="flex space-x-2">
+              <button
+                type="submit"
+                className="w-1/2 px-4 py-2 bg-blue-500 text-white font-bold rounded"
+              >
+                UPDATE PROFILE
+              </button>
+              <button className="w-1/2 px-4 py-2 bg-gray-500 text-white font-bold rounded">
+                CHANGE PASSWORD
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate("/orders")}
+              className="w-full px-4 py-2 border bg-yellow-500 text-white font-bold rounded"
+            >
+              MY ORDERS
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="w-full px-4 py-2 bg-red-500 text-white font-bold rounded"
+            >
+              DELETE ACCOUNT
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="w-full px-4 py-2 border border-black text-black font-bold rounded"
+            >
+              EXIT
+            </button>
+          </div>
+        </form>
       </div>
-    </section>
+    </div>
   );
 };
 

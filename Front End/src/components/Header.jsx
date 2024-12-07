@@ -7,6 +7,7 @@ import Navbar from "./Navbar";
 import { useState, useContext } from "react";
 import { MdClose, MdMenu } from "react-icons/md";
 import { FaOpencart } from "react-icons/fa";
+import { FaUser } from "react-icons/fa";
 import { ShopContext } from "../Context/ShopContext";
 
 const Header = () => {
@@ -89,17 +90,22 @@ const Header = () => {
               <img src={userIcon} alt="User Icon" className="h-8 w-8 rounded-full" />
             </NavLink>
             {localStorage.getItem("auth-token") ? (
-              <NavLink
-                onClick={() => {
-                  localStorage.removeItem("auth-token");
-                  window.location.replace("/");
-                }}
-                to="logout"
-                className="btn_secondary_rounded flexCenter gap-x-2 medium-16"
-              >
-                <img src={logout} alt="logoutIcon" height={19} width={19} />
-                Logout
-              </NavLink>
+              <>
+                <NavLink to="profile" className="flex">
+                  <FaUser className="ml-2 p-1 h-8 w-8 ring-slate-900/30 ring-1 rounded-full" alt="userIcon" height={19} width={19} />
+                </NavLink>
+                <NavLink
+                  onClick={() => {
+                    localStorage.removeItem("auth-token");
+                    window.location.replace("/");
+                  }}
+                  to="logout"
+                  className="btn_secondary_rounded flexCenter gap-x-2 medium-16"
+                >
+                  <img src={logout} alt="logoutIcon" height={19} width={19} />
+                  Logout
+                </NavLink>
+              </>
             ) : (
               <NavLink
                 to="login"
