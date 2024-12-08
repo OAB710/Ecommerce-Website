@@ -1,7 +1,21 @@
-
+import { useNavigate } from 'react-router-dom';
 
 const Offer = () => {
+  const navigate = useNavigate();
+
+  const handleNavigate = () => {
+    navigate('/shop');
+  };
+
   return (
+    <section className="bg-banneroffer bg-cover bg-center w-full px-4 py-24 mt-16">
+      <div className="max_padd_container">
+        <h2 className="h2">Summer Sale 50%</h2>
+        <h3 className="h3 capitalize">Men's Leather Formal Wear Shoes</h3>
+        <button className="btn_dark_rounded" onClick={handleNavigate}>
+          Go to store
+        </button>
+      </div>
     <section className="bg-banneroffer bg-cover bg-center
     w-full px-4 py-24" >
         <div className="max_padd_container">
@@ -10,7 +24,7 @@ const Offer = () => {
             <button className="btn_dark_rounded" >Go to store </button>
         </div>
     </section>
-  )
-}
+  );
+};
 
-export default Offer
+export default Offer;

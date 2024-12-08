@@ -19,12 +19,6 @@ const Sidebar = () => {
         </button>
       </Link>
 
-      <Link to="/addproduct">
-        <button className="flexCenter gap-2 rounded-md bg-primary h-12 w-44 xs:w-44 medium-16"> 
-          <img src={addProduct} alt="" height={50} width={50} />
-          <span>Add Product</span>
-        </button>
-      </Link>
 
       <Link to="/listproduct">
         <button className="flexCenter gap-2 rounded-md bg-primary h-12 w-44 xs:w-44 medium-16">

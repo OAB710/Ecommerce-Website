@@ -24,7 +24,7 @@ const NewCollectionsKids = () => {
                 id={item.id}
                 image={representativeVariant.image}
                 name={item.name}
-                new_price={item.new_priace}
+                new_price={item.new_price}
                 old_price={item.old_price}
                 color={representativeVariant.color}
                 tags={item.tags}

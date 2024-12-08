@@ -35,18 +35,6 @@ const Dashboard = () => {
     ],
   };
 
-  const bestSellingProductsData = {
-    labels: data.bestSellingProducts.map(p => p.name),
-    datasets: [
-      {
-        label: 'Total Sold',
-        data: data.bestSellingProducts.map(p => p.totalSold),
-        backgroundColor: 'rgba(153, 102, 255, 0.6)',
-        borderColor: 'rgba(153, 102, 255, 1)',
-        borderWidth: 1,
-      },
-    ],
-  };
 
   return (
     <div className="p-8 box-border bg-white w-full rounded-sm mt-4 lg:m-7">
@@ -68,14 +56,6 @@ const Dashboard = () => {
           <h3 className="bold-18">Total Orders</h3>
           <p className="regular-16">{data.totalOrders}</p>
         </div>
-      </div>
-      <div className="mt-8">
-        <h3 className="bold-18">Total Products Over the Last 12 Months</h3>
-        <Line data={productChartData} />
-      </div>
-      <div className="mt-8">
-        <h3 className="bold-18">Top 5 Best-Selling Products</h3>
-        <Bar data={bestSellingProductsData} />
       </div>
     </div>
   );

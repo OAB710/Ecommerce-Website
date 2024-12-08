@@ -18,8 +18,8 @@ const Hero = () => {
             <div className="bold-16 sm:bold-20">200k <span className="regular-16 sm:regular-20">Excellent Reviews</span>
             </div>
             <div className="max-xs:flex-col flex gap-2">
-                <NavLink to={""} className={"btn_dark_rounded flexCenter"}>Shop now</NavLink>
-                <NavLink to={""} className={"btn_dark_rounded flexCenter"}><MdOutlineLocalOffer className="text-2x1"/>Offers</NavLink>
+                <NavLink to={"/shop"} className={"btn_dark_rounded flexCenter"}>Shop now</NavLink>
+                {/* <NavLink to={""} className={"btn_dark_rounded flexCenter"}><MdOutlineLocalOffer className="text-2x1"/>Offers</NavLink> */}
             </div>        
             </div>
         </div>
