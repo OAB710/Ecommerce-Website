@@ -16,7 +16,7 @@ const NewCollectionsWomen = () => {
         <h3 className='h3 text-center'>New Collections for Women</h3>
         <hr className='h-[3px] md:w-1/2 mx-auto bg-gradient-to-l from-transparent via-black to-transparent mb-16' />
         <div className='grid grid-col-1 xs:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6'>
-          {newCollectionWomen.slice(0, 4).map((item) => {
+          {newCollectionWomen.map((item) => {
             const representativeVariant = item.variants[0]; // Select the first variant as the representative
             return (
               <Item
@@ -27,7 +27,6 @@ const NewCollectionsWomen = () => {
                 new_price={item.new_price}
                 old_price={item.old_price}
                 color={representativeVariant.color}
-                tags={item.tags}
               />
             );
           })}
