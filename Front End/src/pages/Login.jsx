@@ -78,6 +78,7 @@ const Login = () => {
 
     if (responseData.success) {
       alert("Password reset email sent. Please check your inbox.");
+      navigate('/verifyotp', { state: { email } });
     } else {
       alert(responseData.errors);
     }
