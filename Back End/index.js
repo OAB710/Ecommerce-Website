@@ -242,8 +242,8 @@ const Category = mongoose.model('Category', {
 });
 //review
 const Review = mongoose.model('Review', {
-  product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   review: {
     type: String,
     required: true,
@@ -312,7 +312,11 @@ const Order = mongoose.model('Order', {
   products: [
     {
       product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
-      
+      variants: {
+        size: String,
+        color: String,
+      },
+      name: String,
       quantity: Number,
       price: Number,
     },
@@ -943,7 +947,7 @@ app.post('/edituser/:id', async (req, res) => {
 
 app.post('/addorder', async (req, res) => {
   try {
-    const { products, total, shippingAddress, paymentMethod, name, phone, email } = req.body;
+    const { products, total, shippingAddress, paymentMethod, name, phone, email, note } = req.body;
     let user;
 
     if (req.header('auth-token')) {
@@ -968,10 +972,19 @@ app.post('/addorder', async (req, res) => {
 
     const order = new Order({
       user: user._id,
-      products,
+      products: products.map(product => ({
+        product: product.product,
+        variants: product.variants,
+        quantity: product.quantity,
+        price: product.price,
+        name: product.name,
+      })),
       total,
       shippingAddress,
       paymentMethod,
+      name, // Include name from orderDetails
+      phone, // Include contact from orderDetails
+      note, // Add note field
     });
 
     await order.save();
@@ -1001,6 +1014,7 @@ app.get('/allorders', async (req, res) => {
     const totalOrders = await Order.countDocuments(query);
 
     res.json({
+      success: true,
       orders,
       totalPages: Math.ceil(totalOrders / limit),
       currentPage: Number(page),
@@ -1026,17 +1040,53 @@ app.post('/updateorderstatus/:id', async (req, res) => {
   }
 });
 
+app.post('/clearcart', fetchUser, async (req, res) => {
+  try {
+    const userData = await User.findById(req.user.id);
+    if (userData) {
+      userData.cartData = {}; // Clear cart data
+      userData.markModified('cartData');
+      await userData.save();
+      res.json({ success: true, message: "Cart cleared successfully" });
+    } else {
+      res.status(404).json({ success: false, message: "User not found" });
+    }
+  } catch (error) {
+    console.error("Error clearing cart:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
 app.get('/order/:id', async (req, res) => {
   try {
     const order = await Order.findById(req.params.id).populate('user', 'name');
     if (order) {
-      res.json(order);
+      res.json({ success: true, order });
     } else {
       res.status(404).json({ success: false, message: "Order not found" });
     }
   } catch (error) {
     console.error("Error fetching order:", error);
     res.status(500).json({ success: false, message: "An error occurred while fetching the order" });
+  }
+});
+app.get('/getorderdetails', fetchUser, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const orderDetails = {
+      name: user.name,
+      contact: user.phone,
+      address: user.address,
+    };
+
+    res.json({ success: true, ...orderDetails });
+  } catch (error) {
+    console.error("Error fetching order details:", error);
+    res.status(500).json({ success: false, message: "An error occurred while fetching order details" });
   }
 });
 
@@ -1374,7 +1424,7 @@ app.get('/order-stats', async (req, res) => {
 app.get('/reviews/:productId', async (req, res) => {
   try {
     const reviews = await Review.find({ product: req.params.productId }).populate('user', 'name');
-    res.json({ success: true, reviews });
+    res.json(reviews);
   } catch (error) {
     console.error("Error fetching reviews:", error);
     res.status(500).json({ success: false, message: "An error occurred while fetching reviews" });
@@ -1443,47 +1493,14 @@ app.get('/tags', async (req, res) => {
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
-
+// Configure nodemailer
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
   auth: {
-    user: 'trungductwice@gmail.com',
-    pass: 'amut nfcl iguf hohn', // Use the generated app password here
+    user: 'nguyentrungduc.forwork@gmail.com',
+    pass: '14072004az',
   },
 });
-
-// app.post('/forgotpassword', async (req, res) => {
-//   const { email } = req.body;
-//   if (!email) {
-//     return res.status(400).json({ success: false, message: "Email is required" });
-//   }
-
-//   try {
-//     const user = await User.findOne({ email });
-//     if (!user) {
-//       return res.status(404).json({ success: false, message: "User not found" });
-//     }
-
-//     const otp = crypto.randomBytes(6).toString('hex').toUpperCase();
-//     user.resetPasswordToken = otp;
-//     await user.save();
-
-//     // Send the New Password to the user's email
-//     const mailOptions = {
-//       to: user.email,
-//       from: process.env.EMAIL_USER,
-//       subject: 'Password Reset from Shopping cart',
-//       text: `Your new Password is: ${otp}\n\n\n`,
-//     };
-
-//     await transporter.sendMail(mailOptions);
-
-//     res.json({ success: true, message: "New password created successfully" });
-//   } catch (error) {
-//     console.error("Error sending OTP email:", error);
-//     res.status(500).json({ success: false, message: "An error occurred while sending email" });
-//   }
-// });
 
 app.post('/forgotpassword', async (req, res) => {
   const { email } = req.body;
@@ -1497,24 +1514,29 @@ app.post('/forgotpassword', async (req, res) => {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    const otp = crypto.randomBytes(6).toString('hex').toUpperCase();
-    user.password = otp; // Lưu OTP làm mật khẩu mới
+    // Generate a 6-character OTP
+    const otp = crypto.randomBytes(3).toString('hex').toUpperCase();
+    user.resetPasswordToken = otp;
+    user.resetPasswordExpires = Date.now() + 300000; // 5 minutes
     await user.save();
 
-    // Send the New Password to the user's email
+    // Send the OTP email
     const mailOptions = {
       to: user.email,
-      from: 'trungductwice@gmail.com',
-      subject: 'Password Reset from Shopping cart',
-      text: `Your new Password is: ${otp}\n\n\n`,
+      from: process.env.EMAIL_USER,
+      subject: 'Password Reset OTP from Shopping cart',
+      text: `.\n\n
+      Your OTP is: ${otp}\n\n
+      This OTP is valid for 5 minutes.\n\n
+      If you did not request this, please ignore this email and your password will remain unchanged.\n`,
     };
 
     await transporter.sendMail(mailOptions);
 
-    res.json({ success: true, message: "New password created successfully" });
+    res.json({ success: true, message: "OTP sent successfully" });
   } catch (error) {
     console.error("Error sending OTP email:", error);
-    res.status(500).json({ success: false, message: "An error occurred while sending email" });
+    res.status(500).json({ success: false, message: "An error occurred while sending the OTP email" });
   }
 });
 
@@ -1533,7 +1555,7 @@ app.post('/updateprofile', async (req, res) => {
     user.phone = phone;
     user.address = address;
     await user.save();
-    
+
     res.json({ success: true, message: "Profile updated successfully" });
   } catch (error) {
     console.error("Error updating profile:", error);
@@ -1640,26 +1662,5 @@ app.post('/resetpassword', async (req, res) => {
   } catch (error) {
     console.error("Error resetting password:", error);
     res.status(500).json({ success: false, message: "An error occurred while resetting the password" });
-  }
-});
-app.post('/subscribe', async (req, res) => {
-  const { email } = req.body;
-  if (!email) {
-    return res.status(400).json({ success: false, message: "Email is required" });
-  }
-
-  const mailOptions = {
-    to: email,
-    from: 'trungductwice@gmail.com',
-    subject: 'Subscription Successful',
-    text: 'You have successfully subscribed to our newsletter!',
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    res.json({ success: true, message: "Subscription email sent successfully" });
-  } catch (error) {
-    console.error("Error sending subscription email:", error);
-    res.status(500).json({ success: false, message: "An error occurred while sending the subscription email" });
   }
 });
