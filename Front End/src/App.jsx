@@ -22,7 +22,7 @@ import Delivery from "./pages/Delivery";
 import DeliveryDetail from "./pages/DeliveryDetail";
 import AddDele from "./pages/AddDele";
 import ChooseDeli from "./pages/ChooseDeli";
-import OrderDetail from './pages/OrderDetail';
+import VerifyOTP from './pages/VerifyOTP';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -54,6 +54,7 @@ export default function App() {
           </Route>
           <Route path="/cart-page" element={<Cart />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/verifyotp" element={<VerifyOTP />} />
           <Route path="/resetpassword/:token" element={<ResetPassword />} /> {/* Add the ResetPassword route */}
           <Route path="/profile" element={<Profile />} />
           <Route path="/orders" element={<Order />} />
