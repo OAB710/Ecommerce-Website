@@ -11,8 +11,12 @@ const ViewOrder = () => {
     const fetchOrderDetails = async () => {
       const response = await fetch(`http://localhost:4000/order/${orderId}`);
       const data = await response.json();
-      setOrderDetails(data);
-      setStatus(data.status);
+      if (data.success) {
+        setOrderDetails(data.order);
+        setStatus(data.order.status);
+      } else {
+        console.error('Error fetching order details:', data.message);
+      }
     };
 
     fetchOrderDetails();
@@ -43,7 +47,7 @@ const ViewOrder = () => {
   };
 
   if (!orderDetails) {
-    return <div>Not found...</div>;
+    return <div>Loading...</div>;
   }
 
   return (
@@ -51,7 +55,7 @@ const ViewOrder = () => {
       <h4 className="bold-22 uppercase">Order Details</h4>
       <div className="mb-3">
         <h4 className="bold-18 pb-2">Buyer's Name:</h4>
-        <p>{orderDetails.user.name}</p>
+        <p>{orderDetails.user ? orderDetails.user.name : 'Unknown User'}</p>
       </div>
       <div className="mb-3">
         <h4 className="bold-18 pb-2">Purchase Time:</h4>
@@ -78,7 +82,7 @@ const ViewOrder = () => {
         <ul>
           {orderDetails.products.map((product, index) => (
             <li key={index}>
-              {product.product.name} - {product.variant.size}, {product.variant.color} - {product.quantity} x {formatPrice(product.price)}
+              {product.name} - {product.variants?.size || 'N/A'}, {product.variants?.color || 'N/A'} - {product.quantity} x {formatPrice(product.price)}
             </li>
           ))}
         </ul>
