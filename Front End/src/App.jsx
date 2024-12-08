@@ -13,8 +13,7 @@ import bannerkids from "./assets/bannerkids.png";
 import Men from "./pages/Men";
 import Women from "./pages/Women";
 import Kids from "./pages/Kids";
-
-import Shop from "./pages/Shop"; // Import the Shop component
+import Shop from "./pages/Shop";
 import Profile from "./pages/Profile";
 import Order from "./pages/Order";
 import Delivery from "./pages/Delivery";
@@ -47,7 +46,7 @@ export default function App() {
           <Route path="/men" element={<Men />} />
           <Route path="/women" element={<Women />} />
           <Route path="/kid" element={<Kids />} />
-          <Route path="/shop" element={<Shop />} /> {/* Add the Shop route */}
+          <Route path="/shop" element={<Shop />} />
           <Route path="/product" element={<Product />}>
             <Route path=":productId" element={<Product />} />
           </Route>
