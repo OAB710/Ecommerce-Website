@@ -646,17 +646,22 @@ app.post('/editproduct/:id', async (req, res) => {
 // creating middleware to fetch user
 const fetchUser = async (req, res, next) => {
   const token = req.header('auth-token');
-  
   if (!token) {
-    res.status(401).send({ errors: "Please authenticate using valid login" });
-  } else {
-    try {
-      const data = jwt.verify(token, 'secret_ecom');
-      req.user = data.user;
-      next();
-    } catch (error) {
-      res.status(401).send({ errors: "Please authenticate using a valid token" });
+    return res.status(401).json({ success: false, message: "Access Denied" });
+  }
+
+  try {
+    const data = jwt.verify(token, 'secret_ecom');
+    req.user = data.user;
+
+    // Extract email from query parameters and add it to the request body
+    if (req.query.email) {
+      req.body.email = req.query.email;
     }
+
+    next();
+  } catch (error) {
+    res.status(401).json({ success: false, message: "Invalid Token" });
   }
 };
 
@@ -1142,15 +1147,23 @@ app.get('/profile', fetchUser, async (req, res) => {
 // Update user profile
 app.put('/profile', fetchUser, async (req, res) => {
   try {
-    const { name, email, phone, address } = req.body;
+    const { name, email, phone, address, password } = req.body;
+    const updateData = { name, email, phone, address };
+
+    if (password) {
+      updateData.password = password; // Cập nhật mật khẩu mà không hash
+    }
+
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { name, email, phone, address },
+      updateData,
       { new: true }
     );
+
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+
     res.json(user);
   } catch (error) {
     console.error('Error updating profile:', error);
@@ -1653,45 +1666,50 @@ app.post('/addreview', async (req, res) => {
     res.status(500).json({ success: false, message: "An error occurred while adding the review" });
   }
 });
-app.post('/verifyotp', async (req, res) => {
-  const { email, otp } = req.body;
-  if (!email || !otp) {
-    return res.status(400).json({ success: false, message: "Email and OTP are required" });
+// app.post('/verifyotp', async (req, res) => {
+//   const { email, otp } = req.body;
+//   if (!email || !otp) {
+//     return res.status(400).json({ success: false, message: "Email and OTP are required" });
+//   }
+
+//   try {
+//     const user = await User.findOne({ email, resetPasswordToken: otp, resetPasswordExpires: { $gt: Date.now() } });
+//     if (!user) {
+//       return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+//     }
+
+//     res.json({ success: true, message: "OTP verified successfully" });
+//   } catch (error) {
+//     console.error("Error verifying OTP:", error);
+//     res.status(500).json({ success: false, message: "An error occurred while verifying the OTP" });
+//   }
+// });
+app.post('/updatepassword', async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  const userId = req.user.id; // Assuming you have user ID from authentication middleware
+
+  if (!oldPassword || !newPassword) {
+    return res.status(400).json({ success: false, message: "Old password and new password are required" });
   }
 
   try {
-    const user = await User.findOne({ email, resetPasswordToken: otp, resetPasswordExpires: { $gt: Date.now() } });
+    const user = await User.findById(userId);
     if (!user) {
-      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+      return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    res.json({ success: true, message: "OTP verified successfully" });
-  } catch (error) {
-    console.error("Error verifying OTP:", error);
-    res.status(500).json({ success: false, message: "An error occurred while verifying the OTP" });
-  }
-});
-app.post('/resetpassword', async (req, res) => {
-  const { email, otp, newPassword } = req.body;
-  if (!email || !otp || !newPassword) {
-    return res.status(400).json({ success: false, message: "Email, OTP, and new password are required" });
-  }
-
-  try {
-    const user = await User.findOne({ email, resetPasswordToken: otp, resetPasswordExpires: { $gt: Date.now() } });
-    if (!user) {
-      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: "Old password is incorrect" });
     }
 
     user.password = newPassword; // Ensure you hash the password before saving
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
     await user.save();
 
-    res.json({ success: true, message: "Password reset successfully" });
+    res.json({ success: true, message: "Password updated successfully" });
   } catch (error) {
-    console.error("Error resetting password:", error);
-    res.status(500).json({ success: false, message: "An error occurred while resetting the password" });
+    console.error("Error updating password:", error);
+    res.status(500).json({ success: false, message: "An error occurred while updating the password" });
   }
 });
 app.post('/subscribe', async (req, res) => {
@@ -1713,5 +1731,51 @@ app.post('/subscribe', async (req, res) => {
   } catch (error) {
     console.error("Error sending subscription email:", error);
     res.status(500).json({ success: false, message: "An error occurred while sending the subscription email" });
+  }
+});
+app.post('/resetpassword/:id', async (req, res) => {
+  const { id } = req.params;
+  const { oldPassword, newPassword } = req.body;
+
+  if (!oldPassword || !newPassword) {
+    return res.status(400).json({ success: false, message: "Old password and new password are required" });
+  }
+
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: "Old password is incorrect" });
+    }
+
+    if (oldPassword === newPassword) {
+      return res.status(400).json({ success: false, message: "New password cannot be the same as the old password" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10); // Hash the new password before saving
+    await user.save();
+
+    res.json({ success: true, message: "Password updated successfully" });
+  } catch (error) {
+    console.error("Error updating password:", error);
+    res.status(500).json({ success: false, message: "An error occurred while updating the password" });
+  }
+});
+app.post('/verify-password', (req, res) => {
+  const { oldPassword } = req.body;
+  const token = req.headers['auth-token'];
+
+  // Verify the token and get the user
+  const user = jwt.verify(token, 'your_jwt_secret');
+
+  // Check if the old password matches the user's current password
+  if (user.password === oldPassword) {
+    res.json({ isValid: true });
+  } else {
+    res.status(400).json({ isValid: false });
   }
 });

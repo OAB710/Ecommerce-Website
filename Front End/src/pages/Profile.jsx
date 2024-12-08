@@ -1,101 +1,3 @@
-// import React from "react";
-
-// const Profile = () => {
-//   return (
-//     <section className="min-h-screen flex items-center justify-center bg-gray-100 mt-5">
-//       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-2xl mt-20">
-//         <h1 className="text-2xl font-bold mb-6">My Account</h1>
-//         <form>
-//           <div className="mb-4">
-//             <label className="block text-gray-700 font-bold mb-2" htmlFor="name">
-//               Name *
-//             </label>
-//             <input
-//               className="w-full px-3 py-2 border rounded"
-//               id="name"
-//               type="text"
-//               required={true}
-//             />
-//           </div>
-//           {/* <div className="mb-4">
-//             <label className="block text-gray-700 font-bold mb-2" htmlFor="dob">
-//               Date Of Birth (Date/Month/Year)
-//             </label>
-//             <input
-//               className="w-full px-3 py-2 border rounded"
-//               id="dob"
-//               type="text"
-//               required={true}
-//             />
-//           </div> */}
-//           <div className="mb-4">
-//             <label className="block text-red-500 font-bold mb-2" htmlFor="points">
-//               Loyalty Points
-//             </label>
-//             <input
-//               className="w-full px-3 py-2 border rounded bg-gray-200"
-//               id="points"
-//               type="text"
-//               value="- 5 %"
-//               disabled
-//             />
-//           </div>
-//           <div className="mb-4">
-//             <label className="block text-gray-700 font-bold mb-2" htmlFor="email">
-//               Email *
-//             </label>
-//             <input
-//               className="w-full px-3 py-2 border rounded"
-//               id="email"
-//               type="text"
-//               required={true}
-//             />
-//           </div>
-//           <div className="mb-4 flex items-center">
-//             <div className="w-full">
-//               <label className="block text-gray-700 font-bold mb-2" htmlFor="phone">
-//                 Phone *
-//               </label>
-//               <input
-//                 className="w-full px-3 py-2 border rounded"
-//                 id="phone"
-//                 type="text"
-//                 required={true}
-//               />
-//             </div>
-//           </div>
-//           <div className="mb-4">
-//             <label className="block text-gray-700 font-bold mb-2" htmlFor="address">
-//               Address*
-//             </label>
-//             <input
-//               className="w-full px-3 py-2 border rounded"
-//               id="address"
-//               type="text"
-//               required={true}
-//             />
-//           </div>
-//           <div className="flex flex-col space-y-2">
-//             <button className="w-full px-4 py-2 bg-blue-500 text-white font-bold rounded">
-//               UPDATE PROFILE
-//             </button>
-//             <button className="w-full px-4 py-2 bg-gray-500 text-white font-bold rounded">
-//               CHANGE PASSWORD
-//             </button>
-//             <button className="w-full px-4 py-2 border border-black text-black font-bold rounded">
-//               EXIT
-//             </button>
-//             <button className="w-full px-4 py-2 bg-red-500 text-white font-bold rounded">
-//               DELETE ACCOUNT
-//             </button>
-//           </div>
-//         </form>
-//       </div>
-//     </section>
-//   );
-// };
-
-// export default Profile;
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -106,7 +8,14 @@ const Profile = () => {
     email: "",
     phone: "",
     address: "",
-    addresses: [], // Thêm dòng này
+    addresses: [],
+    password: "",
+  });
+  const [showPasswordFields, setShowPasswordFields] = useState(false);
+  const [passwords, setPasswords] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmNewPassword: "",
   });
   const navigate = useNavigate();
 
@@ -138,23 +47,73 @@ const Profile = () => {
     }));
   };
 
-  const handleUpdate = (e) => {
+  const handlePasswordChange = (e) => {
+    const { id, value } = e.target;
+    setPasswords((prevPasswords) => ({
+      ...prevPasswords,
+      [id]: value,
+    }));
+  };
+
+  const verifyOldPassword = async () => {
+    try {
+      const response = await fetch("http://localhost:4000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: profile.email, password: passwords.oldPassword }),
+      });
+      const data = await response.json();
+      return data.token ? true : false;
+    } catch (error) {
+      console.error("Error verifying old password:", error);
+      return false;
+    }
+  };
+
+  const handleUpdate = async (e) => {
     e.preventDefault();
-    fetch("http://localhost:4000/profile", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "auth-token": localStorage.getItem("auth-token"),
-      },
-      body: JSON.stringify(profile),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data) {
-          alert("Profile updated successfully!");
-        }
-      })
-      .catch((error) => console.error("Error updating profile:", error));
+    const profileData = { ...profile };
+  
+    if (showPasswordFields) {
+      if (passwords.newPassword !== passwords.confirmNewPassword) {
+        alert("Passwords do not match");
+        return;
+      }
+  
+      const isOldPasswordValid = await verifyOldPassword();
+      if (!isOldPasswordValid) {
+        alert("Old password is incorrect");
+        return;
+      }
+  
+      profileData.password = passwords.newPassword;
+    }
+  
+    console.log("Profile Data to be updated:", profileData);
+  
+    try {
+      const response = await fetch("http://localhost:4000/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "auth-token": localStorage.getItem("auth-token"),
+        },
+        body: JSON.stringify(profileData),
+      });
+  
+      if (response.ok) {
+        console.log("Profile updated successfully:", profileData);
+        alert("Profile updated successfully");
+      } else {
+        console.log("Failed to update profile:", profileData);
+        alert("Failed to update profile");
+      }
+    } catch (error) {
+      console.log("Error updating profile:", error);
+      alert("Failed to update profile");
+    }
   };
 
   const handleDelete = () => {
@@ -174,7 +133,6 @@ const Profile = () => {
           }
         })
         .catch((error) => console.error("Error deleting account:", error));
-
     }
   };
 
@@ -264,6 +222,58 @@ const Profile = () => {
               required
             />
           </div>
+          {showPasswordFields && (
+            <>
+              <div className="mb-4">
+                <label
+                  className="block text-gray-700 font-bold mb-2"
+                  htmlFor="oldPassword"
+                >
+                  Old Password *
+                </label>
+                <input
+                  className="w-full px-3 py-2 border rounded"
+                  id="oldPassword"
+                  type="password"
+                  value={passwords.oldPassword}
+                  onChange={handlePasswordChange}
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label
+                  className="block text-gray-700 font-bold mb-2"
+                  htmlFor="newPassword"
+                >
+                  New Password *
+                </label>
+                <input
+                  className="w-full px-3 py-2 border rounded"
+                  id="newPassword"
+                  type="password"
+                  value={passwords.newPassword}
+                  onChange={handlePasswordChange}
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label
+                  className="block text-gray-700 font-bold mb-2"
+                  htmlFor="confirmNewPassword"
+                >
+                  Confirm New Password *
+                </label>
+                <input
+                  className="w-full px-3 py-2 border rounded"
+                  id="confirmNewPassword"
+                  type="password"
+                  value={passwords.confirmNewPassword}
+                  onChange={handlePasswordChange}
+                  required
+                />
+              </div>
+            </>
+          )}
           <h1 className="mb-6 text-blue-500">
             <span
               style={{ cursor: "pointer" }}
@@ -273,7 +283,6 @@ const Profile = () => {
               Click here to manage your shipping information
             </span>
           </h1>
-          {/* Code here */}
           <div className="flex flex-col space-y-2">
             <div className="flex space-x-2">
               <button
@@ -282,7 +291,11 @@ const Profile = () => {
               >
                 UPDATE PROFILE
               </button>
-              <button className="w-1/2 px-4 py-2 bg-gray-500 text-white font-bold rounded">
+              <button
+                type="button"
+                onClick={() => setShowPasswordFields(!showPasswordFields)}
+                className="w-1/2 px-4 py-2 bg-gray-500 text-white font-bold rounded"
+              >
                 CHANGE PASSWORD
               </button>
             </div>
