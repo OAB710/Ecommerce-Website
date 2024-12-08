@@ -30,7 +30,6 @@ const AddDele = () => {
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
-          navigate("/delivery");
         } else {
           console.error("Error adding address:", data.message);
         }
@@ -94,7 +93,7 @@ const AddDele = () => {
             </button>
             <button
               type="button"
-              onClick={() => navigate("/delivery")}
+              onClick={() => navigate((-1))}
               className="w-full px-4 py-2 border border-black text-black font-bold rounded"
             >
               RETURN

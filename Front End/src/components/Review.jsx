@@ -5,10 +5,14 @@ const Review = ({ productId }) => {
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
-    fetchReviews();
+    if (productId) {
+      fetchReviews();
+    }
   }, [productId]);
 
   const fetchReviews = async () => {
+    console.log("Fetching reviews for productId:", productId); // Add this line to log productId
+    console.log("Fetching reviews for productId:", productId); // Add this line to log productId
     const response = await fetch(`http://localhost:4000/reviews/${productId}`);
     const data = await response.json();
     if (data.success) {

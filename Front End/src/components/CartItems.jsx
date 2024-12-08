@@ -18,6 +18,7 @@ const CartItems = () => {
   } = useContext(ShopContext);
 
   const [couponCode, setCouponCode] = useState("");
+  const [mainImage, setMainImage] = useState("");
   const [orderDetails, setOrderDetails] = useState({
     name: user.name,
     email: user.email,
@@ -150,6 +151,78 @@ const CartItems = () => {
     }
   };
 
+    const updateMainImage = (product, color) => {
+    const variant = product.variants.find((variant) => variant.color === color);
+    return variant ? variant.image : product.image;
+  };
+  
+  <tbody>
+    {Object.keys(cartItems).map((key) => {
+    if (cartItems[key] > 0) {
+      const [productId, size, color] = key.split("_");
+      const product = all_products.find((p) => p.id === productId);
+      
+      if (!product) {
+        console.error(`Product with ID ${productId} not found`);
+        return null;
+      }
+
+      console.log("Product found:", product);
+      const imageSrc = updateMainImage(product, color);
+
+      const variant = product.variants.find((variant) => variant.color === color && variant.size === size);
+      
+      if (!variant) {
+        console.error(`Variant with color ${color} and size ${size} not found for product ID ${productId}`);
+        return null;
+      }
+
+      console.log("Variant found:", variant);
+
+      return (
+        <tr
+          key={key}
+          className="border-b border-slate-900/20 text-gray-30 p-6 medium-14 text-center"
+        >
+          <td className="flexCenter">
+            <img
+              src={imageSrc}
+              alt="prdctImg"
+              height={43}
+              width={43}
+              className="rounded-lg ring-1 ring-slate-900/5 my-1"
+            />
+          </td>
+            <td>
+              <div className="line-clamp-3">{product.name}</div>
+            </td>
+            <td>{product.new_price} đ</td>
+            <td>{size}</td>
+            <td>{color}</td>
+            <td>
+              <input
+                type="number"
+                min="0"
+                value={cartItems[key]}
+                onChange={(e) => updateCartItem(key, e.target.value)}
+              />
+            </td>
+            <td>{product.new_price * cartItems[key]} đ</td>
+            <td>
+              <div className="bold-22 pl-14">
+                <TbTrash
+                  style={{ cursor: "pointer" }}
+                  onClick={() => removeFromCart(productId, { size, color }, cartItems[key])}
+                />
+              </div>
+            </td>
+          </tr>
+        );
+      }
+      return null;
+    })}
+  </tbody>
+
   return (
     <section className="max_padd_container pt-28 mt-2">
       <table className="w-full mx-auto mt-16" style={{ marginTop: "4.5rem" }}>
@@ -178,7 +251,7 @@ const CartItems = () => {
                 >
                   <td className="flexCenter">
                     <img
-                      src={product.image}
+                      src={product.variants.image}
                       alt="prdctImg"
                       height={43}
                       width={43}

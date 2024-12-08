@@ -123,48 +123,48 @@ const Product = mongoose.model("Product", {
   },
 });
 
-app.post("/addproduct", async (req, res) => {
-  const { name, category, new_price, old_price, variants, date, available, tags, shortDescription } = req.body;
+// app.post("/addproduct", async (req, res) => {
+//   const { name, category, new_price, old_price, variants, date, available, tags, shortDescription } = req.body;
 
-  // Check if all required fields are filled
-  if (!name || !category || !new_price || !old_price || !tags || !shortDescription) {
-    return res.status(400).json({ success: false, message: "All fields are required" });
-  }
+//   // Check if all required fields are filled
+//   if (!name || !category || !new_price || !old_price || !tags || !shortDescription) {
+//     return res.status(400).json({ success: false, message: "All fields are required" });
+//   }
 
-  // Check if new_price and old_price are numbers
-  if (isNaN(new_price) || isNaN(old_price)) {
-    return res.status(400).json({ success: false, message: "New price and old price must be numbers" });
-  }
+//   // Check if new_price and old_price are numbers
+//   if (isNaN(new_price) || isNaN(old_price)) {
+//     return res.status(400).json({ success: false, message: "New price and old price must be numbers" });
+//   }
 
-  // Check if shortDescription is within the character limit
-  if (shortDescription.length > 50) {
-    return res.status(400).json({ success: false, message: "Short description must be 50 characters or less" });
-  }
+//   // Check if shortDescription is within the character limit
+//   if (shortDescription.length > 50) {
+//     return res.status(400).json({ success: false, message: "Short description must be 50 characters or less" });
+//   }
 
-  const product = new Product({
-    id: new mongoose.Types.ObjectId().toString(),
-    name,
-    category,
-    new_price,
-    old_price,
-    variants: variants.map(variant => ({
-      ...variant,
-      image: variant.image instanceof File ? `images/${variant.image.name}` : variant.image
-    })),
-    date,
-    available,
-    tags,
-    shortDescription,
-  });
+//   const product = new Product({
 
-  try {
-    await product.save();
-    res.json({ success: true, message: "Product added successfully" });
-  } catch (error) {
-    console.error("Error adding product:", error);
-    res.status(500).json({ success: false, message: "An error occurred while adding the product" });
-  }
-});
+//     name,
+//     category,
+//     new_price,
+//     old_price,
+//     variants: variants.map(variant => ({
+//       ...variant,
+//       image: variant.image instanceof File ? `images/${variant.image.name}` : variant.image
+//     })),
+//     date,
+//     available,
+//     tags,
+//     shortDescription,
+//   });
+
+//   try {
+//     await product.save();
+//     res.json({ success: true, message: "Product added successfully" });
+//   } catch (error) {
+//     console.error("Error adding product:", error);
+//     res.status(500).json({ success: false, message: "An error occurred while adding the product" });
+//   }
+// });
 
 const User = mongoose.model('User', {
   name: {
@@ -242,7 +242,8 @@ const Category = mongoose.model('Category', {
 });
 //review
 const Review = mongoose.model('Review', {
-  product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+  order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true }, // Thêm trường order
+  product: { type: String, required: true },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   review: {
     type: String,
@@ -1633,37 +1634,58 @@ app.post('/updateprofile', async (req, res) => {
 //   }
 // });
 
-// Fetch reviews for a product
-app.get('/reviews/:productId', async (req, res) => {
-  try {
-    const reviews = await Review.find({ productId: req.params.productId }).populate('userId', 'name');
-    res.json({ success: true, reviews });
-  } catch (error) {
-    console.error("Error fetching reviews:", error);
-    res.status(500).json({ success: false, message: "An error occurred while fetching reviews" });
-  }
-});
-app.post('/addreview', async (req, res) => {
-  const { product, user, review, rating, images } = req.body;
+app.post('/addreview', fetchUser, async (req, res) => {
+  const { orderId, product, review, rating } = req.body;
 
   try {
     const newReview = new Review({
+      order: orderId,
       product,
-      user,
+      user: req.user.id,
       review,
       rating,
-      images,
     });
 
     await newReview.save();
-
-    // Populate the product and user fields
-    const populatedReview = await Review.findById(newReview._id).populate('product').populate('user');
-
-    res.json({ success: true, message: "Review added successfully", review: populatedReview });
+    res.json({ success: true, message: "Review added successfully" });
   } catch (error) {
     console.error("Error adding review:", error);
     res.status(500).json({ success: false, message: "An error occurred while adding the review" });
+  }
+});
+
+app.put('/editreview/:id', fetchUser, async (req, res) => {
+  const { review, rating } = req.body;
+
+  try {
+    const updatedReview = await Review.findByIdAndUpdate(
+      req.params.id,
+      { review, rating },
+      { new: true }
+    );
+
+    if (updatedReview) {
+      res.json({ success: true, message: "Review updated successfully" });
+    } else {
+      res.status(404).json({ success: false, message: "Review not found" });
+    }
+  } catch (error) {
+    console.error("Error updating review:", error);
+    res.status(500).json({ success: false, message: "An error occurred while updating the review" });
+  }
+});
+
+app.get('/getreviews/:orderId', fetchUser, async (req, res) => {
+  try {
+    const reviews = await Review.find({ order: req.params.orderId }).populate('user', 'name');
+    if (reviews.length > 0) {
+      res.json({ success: true, reviews });
+    } else {
+      res.json({ success: false, message: "No reviews found for this order" });
+    }
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    res.status(500).json({ success: false, message: "An error occurred while fetching reviews" });
   }
 });
 // app.post('/verifyotp', async (req, res) => {
