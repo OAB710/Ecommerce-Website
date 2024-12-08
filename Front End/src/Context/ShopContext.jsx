@@ -1,165 +1,3 @@
-// import { createContext, useState, useEffect } from "react";
-
-// export const ShopContext = createContext(null);
-
-// // const getDefaultCart = () => {
-// //   let cart = {};
-
-// //   for (let index = 0; index < 300 + 1; index++) {
-// //     cart[index] = 0;
-// //   }
-// //   return cart;
-// // };
-
-// const ShopContextProvider = (props) => {
-//   const [cartItems, setCartItems] = useState([]);
-//   const [all_products, setAll_products] = useState([]);
-
-//   useEffect(() => {
-//     fetch("http://localhost:4000/allproducts")
-//       .then((response) => response.json())
-//       .then((data) => {
-//         console.log("Fetched products:", data.products); // Add this line
-//         setAll_products(data.products || []);
-//       });
-
-//     if (localStorage.getItem("auth-token")) {
-//       fetch("http://localhost:4000/getcart", {
-//         method: "POST",
-//         headers: {
-//           Accept: "application/form-data",
-//           "auth-token": `${localStorage.getItem("auth-token")}`,
-//           "Content-Type": "application/json",
-//         },
-//         body: "",
-//       })
-//         .then((response) => response.json())
-//         .then((data) => setCartItems(data));
-//     }
-//   }, []);
-
-//   const addToCart = (productId, variant, quantity = 1) => {
-//     const cartKey = `${productId}_${variant.size}_${variant.color}`;
-//     setCartItems((prev) => ({
-//       ...prev,
-//       [cartKey]: (prev[cartKey] || 0) + quantity,
-//     }));
-
-//     if (localStorage.getItem("auth-token")) {
-//       fetch("http://localhost:4000/addtocart", {
-//         method: "POST",
-//         headers: {
-//           Accept: "application/json",
-//           "auth-token": localStorage.getItem("auth-token"),
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({ productId, variant, quantity }),
-//       })
-//         .then((response) => response.json())
-//         .then((data) => {
-//           console.log(data);
-//           if (data.success) {
-//             setCartItems(data.cartData);
-//           }
-//         });
-//     }
-//   };
-
-//   // const removeFromCart = (itemId) => {
-//   //   setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] - 1 }));
-
-//   //   if (localStorage.getItem("auth-token")) {
-//   //     fetch("http://localhost:4000/removefromcart", {
-//   //       method: "POST",
-//   //       headers: {
-//   //         Accept: "application/form-data",
-//   //         "auth-token": `${localStorage.getItem("auth-token")}`,
-//   //         "Content-Type": "application/json",
-//   //       },
-//   //       body: JSON.stringify({ itemId: itemId }),
-//   //     })
-//   //       .then((response) => response.json())
-//   //       .then((data) => console.log(data));
-//   //   }
-//   // };
-
-//     const removeFromCart = (productId, variant, quantity = 1) => {
-//     const cartKey = `${productId}_${variant.size}_${variant.color}`;
-//     setCartItems((prev) => {
-//       const updatedCartItems = { ...prev };
-//       if (updatedCartItems[cartKey] > 0) {
-//         updatedCartItems[cartKey] -= quantity;
-//         if (updatedCartItems[cartKey] <= 0) {
-//           delete updatedCartItems[cartKey];
-//         }
-//       }
-//       return updatedCartItems;
-//     });
-
-//     if (localStorage.getItem("auth-token")) {
-//       fetch("http://localhost:4000/removefromcart", {
-//         method: "POST",
-//         headers: {
-//           Accept: "application/json",
-//           "auth-token": localStorage.getItem("auth-token"),
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({ productId, variant, quantity }),
-//       })
-//         .then((response) => response.json())
-//         .then((data) => {
-//           console.log(data);
-//           if (data.success) {
-//             setCartItems(data.cartData);
-//           }
-//         });
-//     }
-//   };
-
-//   const getTotalCartAmount = () => {
-//     let totalAmount = 0;
-//     for (const item in cartItems) {
-//       if (cartItems[item] > 0) {
-//         let itemInfo = all_products.find(
-//           (product) => product.id === Number(item)
-//         );
-//         if (itemInfo) {
-//           const price =
-//             itemInfo.new_price !== undefined ? itemInfo.new_price : 0;
-//           totalAmount += price * cartItems[item];
-//         }
-//       }
-//     }
-//     return totalAmount;
-//   };
-
-//   const getTotalCartItems = () => {
-//     let totalItem = 0;
-//     for (const item in cartItems) {
-//       if (cartItems[item] > 0) {
-//         totalItem += cartItems[item];
-//       }
-//     }
-//     return totalItem;
-//   };
-
-//   const contextValue = {
-//     all_products,
-//     cartItems,
-//     addToCart,
-//     removeFromCart,
-//     getTotalCartAmount,
-//     getTotalCartItems,
-//   };
-//   return (
-//     <ShopContext.Provider value={contextValue}>
-//       {props.children}
-//     </ShopContext.Provider>
-//   );
-// };
-
-// export default ShopContextProvider;
-
 import { createContext, useState, useEffect } from "react";
 
 export const ShopContext = createContext(null);
@@ -168,7 +6,7 @@ const ShopContextProvider = (props) => {
   const [cartItems, setCartItems] = useState([]);
   const [all_products, setAll_products] = useState([]);
   const [discount, setDiscount] = useState(0);
-  const [user, setUser] = useState({ name: "", email: "", contact: "", address: "" });
+  const [user, setUser] = useState({ name: "", email: "", LoyaltyPoints: "", contact: "", address: "" });
 
   useEffect(() => {
     fetch("http://localhost:4000/allproducts")
@@ -199,11 +37,12 @@ const ShopContextProvider = (props) => {
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log("Fetched profile data:", data); // Thêm dòng này để kiểm tra dữ liệu
+          console.log("Fetched profile data:", data);
           if (data) {
             setUser({
               name: data.name,
               email: data.email,
+              LoyaltyPoints: data.LoyaltyPoints,
               contact: data.phone,
               address: data.address,
             });
@@ -353,6 +192,42 @@ const ShopContextProvider = (props) => {
     return totalItem;
   };
 
+  const calculateLoyaltyPoints = (totalAmount) => {
+    return Math.floor(totalAmount * 0.05);
+  };
+
+  const placeOrder = () => {
+    const totalAmount = getTotalCartAmount();
+    const loyaltyPoints = calculateLoyaltyPoints(totalAmount);
+
+    fetch("http://localhost:4000/placeorder", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "auth-token": localStorage.getItem("auth-token"),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ cartItems, totalAmount, loyaltyPoints }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          alert("Order placed successfully!");
+          setCartItems([]);
+          setUser((prevUser) => ({
+            ...prevUser,
+            LoyaltyPoints: prevUser.LoyaltyPoints + loyaltyPoints,
+          }));
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch((error) => {
+        console.error("Error placing order:", error);
+        alert("An error occurred while placing the order.");
+      });
+  };
+
   const contextValue = {
     all_products,
     cartItems,
@@ -364,6 +239,7 @@ const ShopContextProvider = (props) => {
     applyCoupon,
     discount,
     user,
+    placeOrder,
   };
   return (
     <ShopContext.Provider value={contextValue}>
