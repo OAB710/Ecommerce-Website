@@ -2,7 +2,7 @@ import React from 'react'
 import { FaSearch } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 
-const Item = ({id,name,image,old_price,new_price}) => {
+const Item = ({id, image, name, new_price, old_price, color, shortDescription, tags}) => {
   return (
     <div className='rounded-x1 overflow-hidden shadow-lg'>
       <div className='relative flexCenter group overflow-hidden transition-all duration-100' >
@@ -18,6 +18,8 @@ const Item = ({id,name,image,old_price,new_price}) => {
           <div className='bold-16' >{new_price}.00</div>
           <div className='text-secondary bold-16 line-through' >{old_price}.00</div>
         </div>
+        <p className='text-gray-500 text-sm'>{shortDescription}</p>
+        <p className='text-gray-800 text-sm'>Tag: {tags}</p>
       </div>
     </div>
   )

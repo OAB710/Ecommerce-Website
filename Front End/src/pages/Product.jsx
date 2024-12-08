@@ -6,6 +6,7 @@ import product_rt_2 from "../assets/product_rt_2.png";
 import product_rt_3 from "../assets/product_rt_3.png";
 import product_rt_4 from "../assets/product_rt_4.png";
 import { MdStar } from "react-icons/md";
+import Review from "../components/Review"; // Ensure Review component is imported
 
 const Product = () => {
   const { productId } = useParams();
@@ -212,28 +213,7 @@ const Product = () => {
         </div>
         {/* Reviews Section */}
         <div className="mt-10">
-          <h3 className="h3">Reviews</h3>
-          <div className="flex gap-4 mt-4">
-            <img
-              src={product_rt_1}
-              alt="reviewer"
-              className="w-16 h-16 rounded-full"
-            />
-            <div>
-              <div className="flex gap-x-2 text-secondary medium-22">
-                <MdStar />
-                <MdStar />
-                <MdStar />
-                <MdStar />
-                <p>(111)</p>
-              </div>
-              <p className="mt-2">
-                This is a sample review comment. The product is excellent and
-                meets all my expectations.
-              </p>
-            </div>
-          </div>
-          {/* Add more reviews as needed */}
+          <Review productId={productId} /> {/* Add the Review component */}
         </div>
       </div>
     </section>

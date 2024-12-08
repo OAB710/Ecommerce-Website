@@ -15,7 +15,6 @@ import Women from "./pages/Women";
 import Kids from "./pages/Kids";
 
 import Shop from "./pages/Shop"; // Import the Shop component
-import ResetPassword from "./pages/ResetPassword"; // Import the ResetPassword component
 import Profile from "./pages/Profile";
 import Order from "./pages/Order";
 import Delivery from "./pages/Delivery";
@@ -54,7 +53,6 @@ export default function App() {
           </Route>
           <Route path="/cart-page" element={<Cart />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/resetpassword/:token" element={<ResetPassword />} /> {/* Add the ResetPassword route */}
           <Route path="/profile" element={<Profile />} />
           <Route path="/orders" element={<Order />} />
           <Route path="/delivery" element={<Delivery />} />
