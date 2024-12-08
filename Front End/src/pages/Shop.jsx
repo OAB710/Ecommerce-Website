@@ -106,7 +106,6 @@ const Shop = () => {
   return (
     <div className="shop-page flex mt-16"> {/* Added margin-top */}
       <div className="w-1/4 p-4 bg-gray-100">
-        
         <h3 className="mb-4">Search by Name</h3>
         <input
           type="text"
@@ -165,7 +164,7 @@ const Shop = () => {
               key={index}
               onClick={() => setPage(index + 1)}
               className={`page-button ${page === index + 1 ? "active" : ""} p-2 border rounded`}
-              style={{ fontSize: '1.25rem', margin: '0 0.5rem', backgroundColor: 'orange', color: 'white' }}
+              style={{ fontSize: '1.25rem', margin: '0 0.5rem',  backgroundColor: '#FF813F', color: 'white' }}
             >
               {index + 1}
             </button>

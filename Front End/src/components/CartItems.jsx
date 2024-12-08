@@ -3,6 +3,10 @@ import { ShopContext } from "../Context/ShopContext";
 import { TbTrash } from "react-icons/tb";
 import { useNavigate, useLocation } from "react-router-dom";
 
+const formatPrice = (price) => {
+  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "đ";
+};
+
 const CartItems = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -92,7 +96,6 @@ const CartItems = () => {
     );
   }
 
-  // Front End/src/components/CartItems.jsx
   const handleOrder = async () => {
     navigate("/orders");
     const orderData = {
@@ -151,77 +154,10 @@ const CartItems = () => {
     }
   };
 
-    const updateMainImage = (product, color) => {
+  const updateMainImage = (product, color) => {
     const variant = product.variants.find((variant) => variant.color === color);
     return variant ? variant.image : product.image;
   };
-  
-  <tbody>
-    {Object.keys(cartItems).map((key) => {
-    if (cartItems[key] > 0) {
-      const [productId, size, color] = key.split("_");
-      const product = all_products.find((p) => p.id === productId);
-      
-      if (!product) {
-        console.error(`Product with ID ${productId} not found`);
-        return null;
-      }
-
-      console.log("Product found:", product);
-      const imageSrc = updateMainImage(product, color);
-
-      const variant = product.variants.find((variant) => variant.color === color && variant.size === size);
-      
-      if (!variant) {
-        console.error(`Variant with color ${color} and size ${size} not found for product ID ${productId}`);
-        return null;
-      }
-
-      console.log("Variant found:", variant);
-
-      return (
-        <tr
-          key={key}
-          className="border-b border-slate-900/20 text-gray-30 p-6 medium-14 text-center"
-        >
-          <td className="flexCenter">
-            <img
-              src={imageSrc}
-              alt="prdctImg"
-              height={43}
-              width={43}
-              className="rounded-lg ring-1 ring-slate-900/5 my-1"
-            />
-          </td>
-            <td>
-              <div className="line-clamp-3">{product.name}</div>
-            </td>
-            <td>{product.new_price} đ</td>
-            <td>{size}</td>
-            <td>{color}</td>
-            <td>
-              <input
-                type="number"
-                min="0"
-                value={cartItems[key]}
-                onChange={(e) => updateCartItem(key, e.target.value)}
-              />
-            </td>
-            <td>{product.new_price * cartItems[key]} đ</td>
-            <td>
-              <div className="bold-22 pl-14">
-                <TbTrash
-                  style={{ cursor: "pointer" }}
-                  onClick={() => removeFromCart(productId, { size, color }, cartItems[key])}
-                />
-              </div>
-            </td>
-          </tr>
-        );
-      }
-      return null;
-    })}
-  </tbody>
 
   return (
     <section className="max_padd_container pt-28 mt-2">
@@ -244,6 +180,8 @@ const CartItems = () => {
               const product = all_products.find((p) => p.id === productId);
               if (!product) return null;
 
+              const imageSrc = updateMainImage(product, color);
+
               return (
                 <tr
                   key={key}
@@ -251,7 +189,7 @@ const CartItems = () => {
                 >
                   <td className="flexCenter">
                     <img
-                      src={product.variants.image}
+                      src={imageSrc}
                       alt="prdctImg"
                       height={43}
                       width={43}
@@ -261,7 +199,7 @@ const CartItems = () => {
                   <td>
                     <div className="line-clamp-3">{product.name}</div>
                   </td>
-                  <td>{product.new_price} đ</td>
+                  <td>{formatPrice(product.new_price)}</td> {/* Format the price */}
                   <td>{size}</td>
                   <td>{color}</td>
                   <td>
@@ -305,7 +243,7 @@ const CartItems = () => {
                       }}
                     />
                   </td>
-                  <td>{product.new_price * cartItems[key]} đ</td>
+                  <td>{formatPrice(product.new_price * cartItems[key])}</td> {/* Format the total price */}
                   <td>
                     <div className="bold-22 pl-14">
                       <TbTrash
@@ -349,7 +287,7 @@ const CartItems = () => {
                 <div className="flexBetween py-4">
                   <h4 className="medium-16">Subtotal:</h4>
                   <h4 className="text-gray-30 font-semibold">
-                    {getTotalCartAmount()} đ
+                    {formatPrice(getTotalCartAmount())}
                   </h4>
                 </div>
                 <hr />
@@ -361,10 +299,10 @@ const CartItems = () => {
                       <span className="font-bold text-black mr-2">
                         Free Shipping{" "}
                       </span>{" "}
-                      <span className="line-through">20000 đ</span>
+                      <span className="line-through">{formatPrice(20000)}</span>
                     </h4>
                   ) : (
-                    <h4 className="text-gray-30 font-semibold">20000 đ</h4>
+                    <h4 className="text-gray-30 font-semibold">{formatPrice(20000)}</h4>
                   )}
                 </div>
                 <hr />
@@ -373,7 +311,7 @@ const CartItems = () => {
                     <div className="flexBetween py-4">
                       <h4 className="medium-16">Discount:</h4>
                       <h4 className="text-gray-30 font-semibold">
-                        {discount} đ
+                        {formatPrice(discount)}
                       </h4>
                     </div>
                     <hr />
@@ -382,12 +320,12 @@ const CartItems = () => {
                 <div className="flexBetween py-4">
                   <h4 className="bold-18">Total:</h4>
                   <h4 className="bold-18">
-                    {Math.max(
+                    {formatPrice(Math.max(
                       0,
                       getTotalCartAmount() -
                         discount +
                         (getTotalCartAmount() > 399000 ? 0 : 20000)
-                    )}{" "}
+                    ))}{" "}
                     đ
                   </h4>
                 </div>

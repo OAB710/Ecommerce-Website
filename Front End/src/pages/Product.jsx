@@ -1,10 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { ShopContext } from "../Context/ShopContext";
-import product_rt_1 from "../assets/product_rt_1.png";
-import product_rt_2 from "../assets/product_rt_2.png";
-import product_rt_3 from "../assets/product_rt_3.png";
-import product_rt_4 from "../assets/product_rt_4.png";
 import { MdStar } from "react-icons/md";
 import Review from "../components/Review"; // Ensure Review component is imported
 
@@ -43,6 +39,12 @@ const Product = () => {
 
     fetchProductDetails();
   }, [productId]);
+
+  useEffect(() => {
+    if (remainingQuantity === 0) {
+      setQuantity(0);
+    }
+  }, [remainingQuantity]);
 
   if (!product) {
     return <div>Product not found!</div>;
@@ -86,33 +88,18 @@ const Product = () => {
     setRemainingQuantity(variant ? variant.quantity : null);
   };
 
+  // Get unique colors and sizes
+  const uniqueColors = [...new Set(product.variants.map(variant => variant.color))];
+  const uniqueSizes = [...new Set(product.variants.map(variant => variant.size))];
+
   return (
-    <section className="max_padd_container py-28">
+    <section className="max_padd_container py-28" style={{ marginTop: '80px' }}>
       <div>
         <div className="flex flex-col gap-14 xl:flex-row">
           {/* left side */}
           <div className="flex gap-x-2 xl:flex-1">
             <div className="flex flex-col gap-[7px] flex-wrap">
-              {/* <img
-                src={product_rt_1}
-                alt="productImg"
-                className="max-h-[99px]"
-              />
-              <img
-                src={product_rt_2}
-                alt="productImg"
-                className="max-h-[99px]"
-              />
-              <img
-                src={product_rt_3}
-                alt="productImg"
-                className="max-h-[99px]"
-              />
-              <img
-                src={product_rt_4}
-                alt="productImg"
-                className="max-h-[99px]"
-              /> */}
+
             </div>
             <div>
               <img
@@ -128,11 +115,6 @@ const Product = () => {
           <div className="flex-col flex xl:flex-[1.7]">
             <h3 className="h3">{product.name}</h3>
             <div className="flex gap-x-2 text-secondary medium-22">
-              <MdStar />
-              <MdStar />
-              <MdStar />
-              <MdStar />
-              <p>(111)</p>
             </div>
             <div className="flex gap-x-6 medium-20 my-4">
               <div className="line-through">
@@ -142,40 +124,45 @@ const Product = () => {
                 {formatPrice(product.new_price)}
               </div>
             </div>
-            <div className="mb-4">
+            <div className="mb-4 flex items-center gap-4">
               <h4 className="bold-16">Select Color:</h4>
               <select
                 value={selectedColor}
                 onChange={handleColorChange}
                 className="block w-full mt-1"
               >
-                {product.variants.map((variant, index) => (
-                  <option key={index} value={variant.color}>
-                    {variant.color}
+                {uniqueColors.map((color, index) => (
+                  <option key={index} value={color}>
+                    {color}
                   </option>
                 ))}
               </select>
             </div>
-            <div className="mb-4">
+            <div className="mb-4 flex items-center gap-4">
               <h4 className="bold-16">Select Size:</h4>
               <select
                 value={selectedSize}
                 onChange={handleSizeChange}
                 className="block w-full mt-1"
               >
-                {product.variants.map((variant, index) => (
-                  <option key={index} value={variant.size}>
-                    {variant.size}
+                {uniqueSizes.map((size, index) => (
+                  <option key={index} value={size}>
+                    {size}
                   </option>
                 ))}
               </select>
             </div>
-            {remainingQuantity !== null && (
+            {remainingQuantity !== null ? (
               <div className="mb-4">
                 <h4 className="bold-16">Remaining Quantity:</h4>
                 <p className={remainingQuantity === 0 ? "text-red-500 font-bold" : ""}>
                   {remainingQuantity === 0 ? "Out of Stock" : remainingQuantity}
                 </p>
+              </div>
+            ) : (
+              <div className="mb-4">
+                <h4 className="bold-16">Remaining Quantity:</h4>
+                <p className="text-red-500 font-bold">Out of Stock</p>
               </div>
             )}
             <div className="mb-4">
@@ -184,8 +171,8 @@ const Product = () => {
                 type="number"
                 value={quantity}
                 onChange={(e) => setQuantity(Math.min(e.target.value, remainingQuantity))}
-                min="1"
-                max={remainingQuantity || 1}
+                min="0"
+                max={remainingQuantity || 0}
                 className="block w-full mt-1"
                 disabled={remainingQuantity === 0}
               />
@@ -194,11 +181,14 @@ const Product = () => {
               <button
                 onClick={handleAddToCart}
                 className="btn_dark_rounded !rounded-none uppercase regular-14 tracking-widest"
-                disabled={remainingQuantity === 0}
+                disabled={remainingQuantity === 0 || remainingQuantity === null}
               >
                 Add to cart
               </button>
-              <button className="btn_dark_rounded !rounded-none uppercase regular-14 tracking-widest">
+              <button
+                className="btn_dark_rounded !rounded-none uppercase regular-14 tracking-widest"
+                disabled={remainingQuantity === 0 || remainingQuantity === null}
+              >
                 Buy it now
               </button>
             </div>
