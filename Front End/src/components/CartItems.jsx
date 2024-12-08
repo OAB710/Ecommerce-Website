@@ -20,6 +20,7 @@ const CartItems = () => {
   const [couponCode, setCouponCode] = useState("");
   const [orderDetails, setOrderDetails] = useState({
     name: user.name,
+    email: user.email,
     contact: user.contact,
     address: user.address,
   });
@@ -48,6 +49,7 @@ const CartItems = () => {
               name: data.name,
               contact: data.contact,
               address: data.address,
+              email: data.email,
             });
           } else {
             console.error("Error fetching order details:", data.message);
@@ -89,7 +91,7 @@ const CartItems = () => {
     );
   }
 
-    // Front End/src/components/CartItems.jsx
+  // Front End/src/components/CartItems.jsx
   const handleOrder = async () => {
     navigate("/orders");
     const orderData = {
@@ -117,7 +119,7 @@ const CartItems = () => {
       email: user.email,
       note: orderDetails.note, // Add note field
     };
-  
+
     const response = await fetch("http://localhost:4000/addorder", {
       method: "POST",
       headers: {
@@ -127,11 +129,11 @@ const CartItems = () => {
       },
       body: JSON.stringify(orderData),
     });
-  
+
     const data = await response.json();
     if (data.success) {
       alert("Order placed successfully!");
-  
+
       // Clear cart items in database
       await fetch("http://localhost:4000/clearcart", {
         method: "POST",
@@ -143,7 +145,6 @@ const CartItems = () => {
       });
       window.location.reload();
       setCartItems({}); // Clear cart items in state
-      
     } else {
       alert("Failed to place order: " + data.message);
     }
@@ -308,7 +309,13 @@ const CartItems = () => {
                 <div className="flexBetween py-4">
                   <h4 className="bold-18">Total:</h4>
                   <h4 className="bold-18">
-                    {Math.max(0, getTotalCartAmount() - discount + (getTotalCartAmount() > 399000 ? 0 : 20000))} đ
+                    {Math.max(
+                      0,
+                      getTotalCartAmount() -
+                        discount +
+                        (getTotalCartAmount() > 399000 ? 0 : 20000)
+                    )}{" "}
+                    đ
                   </h4>
                 </div>
               </div>
@@ -356,6 +363,18 @@ const CartItems = () => {
                   value={orderDetails.name}
                   onChange={(e) =>
                     setOrderDetails({ ...orderDetails, name: e.target.value })
+                  }
+                  required={true}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block mb-2">Email *</label>
+                <input
+                  type="text"
+                  className="w-full p-2 border border-gray-300"
+                  value={user.email}
+                  onChange={(e) =>
+                    setOrderDetails({ ...orderDetails, email: e.target.value })
                   }
                   required={true}
                 />

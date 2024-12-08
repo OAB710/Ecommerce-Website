@@ -168,7 +168,7 @@ const ShopContextProvider = (props) => {
   const [cartItems, setCartItems] = useState([]);
   const [all_products, setAll_products] = useState([]);
   const [discount, setDiscount] = useState(0);
-  const [user, setUser] = useState({ name: "", contact: "", address: "" });
+  const [user, setUser] = useState({ name: "", email: "", contact: "", address: "" });
 
   useEffect(() => {
     fetch("http://localhost:4000/allproducts")
@@ -199,9 +199,11 @@ const ShopContextProvider = (props) => {
       })
         .then((response) => response.json())
         .then((data) => {
+          console.log("Fetched profile data:", data); // Thêm dòng này để kiểm tra dữ liệu
           if (data) {
             setUser({
               name: data.name,
+              email: data.email,
               contact: data.phone,
               address: data.address,
             });

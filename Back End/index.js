@@ -331,6 +331,7 @@ const Order = mongoose.model('Order', {
     default: 'pending',
   },
   name: { type: String }, // Thêm dòng này
+  email: { type: String }, // Thêm dòng này
   phone: { type: String }, // Thêm dòng này
   shippingAddress: {
     type: String,
@@ -983,6 +984,7 @@ app.post('/addorder', async (req, res) => {
       shippingAddress,
       paymentMethod,
       name, // Include name from orderDetails
+      email, // Include email from orderDetails
       phone, // Include contact from orderDetails
       note, // Add note field
     });

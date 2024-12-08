@@ -32,8 +32,11 @@ const OrderDetail = () => {
     <div className="mt-[4.5rem] bg-gray-100 mt-5" style={{backgroundColor:"#F3F4F6"}}>
       <div className="max-w-5xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-4">ID: {orderDetails._id}</h1>
-        <p className="mb-2">Date: {new Date(orderDetails.date).toLocaleDateString()}</p>
-        <p className="mb-6">Status: {orderDetails.status}</p>
+        <p className="mb-2"><span className='font-bold'>Date: </span> {new Date(orderDetails.date).toLocaleDateString()}</p>
+        <p className="mb-2"><span className='font-bold'>Name: </span> {orderDetails.name}</p>
+        <p className="mb-2"><span className='font-bold'>Contact: </span> {orderDetails.phone}</p>
+        <p className="mb-2"><span className='font-bold'>Address: </span> {orderDetails.shippingAddress}</p>
+        <p className="mb-6"><span className='font-bold'>Status: </span> {orderDetails.status}</p>
 
         <h2 className="text-xl font-semibold mb-4">Order Details</h2>
         <div className="mb-6">
