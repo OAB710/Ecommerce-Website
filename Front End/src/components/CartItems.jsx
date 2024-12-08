@@ -28,39 +28,7 @@ const CartItems = () => {
 
   const [paymentMethod, setPaymentMethod] = useState("COD");
 
-  useEffect(() => {
-    if (location.state) {
-      setOrderDetails({
-        name: location.state.name,
-        contact: location.state.contact,
-        address: location.state.address,
-      });
-    } else {
-      // Fetch order details if not available in location.state
-      fetch("http://localhost:4000/getorderdetails", {
-        method: "GET",
-        headers: {
-          "auth-token": localStorage.getItem("auth-token"),
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            setOrderDetails({
-              name: data.name,
-              contact: data.contact,
-              address: data.address,
-              email: data.email,
-            });
-          } else {
-            console.error("Error fetching order details:", data.message);
-          }
-        })
-        .catch((error) =>
-          console.error("Error fetching order details:", error)
-        );
-    }
-  }, [location.state]);
+  
 
   const handleChooseDeliveryAddress = () => {
     navigate("/choosedeli", {
