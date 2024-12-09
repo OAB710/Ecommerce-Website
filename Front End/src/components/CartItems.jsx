@@ -144,7 +144,7 @@ const CartItems = () => {
       note: orderDetails.note, // Add note field
       LoyaltyPoints: pointsDiscount / 1000, // Assuming 1 point = 1000 currency units
     };
-
+  
     const response = await fetch("http://localhost:4000/addorder", {
       method: "POST",
       headers: {
@@ -154,20 +154,38 @@ const CartItems = () => {
       },
       body: JSON.stringify(orderData),
     });
-
+  
     const data = await response.json();
     if (data.success) {
       alert("Order placed successfully!");
-
+  
       // Clear cart items in database
       await fetch("http://localhost:4000/clearcart", {
         method: "POST",
         headers: {
           Accept: "application/json",
-          "Content-Type": "application/json",
           "auth-token": localStorage.getItem("auth-token"),
         },
       });
+  
+      // Update product quantities
+      for (const product of orderData.products) {
+        await fetch(`http://localhost:4000/updateproductquantity`, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "auth-token": localStorage.getItem("auth-token"),
+          },
+          body: JSON.stringify({
+            productId: product.product,
+            size: product.variants.size,
+            color: product.variants.color,
+            quantity: product.quantity,
+          }),
+        });
+      }
+  
       window.location.reload();
       setCartItems({}); // Clear cart items in state
     } else {

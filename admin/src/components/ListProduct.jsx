@@ -9,7 +9,7 @@ const ListProduct = () => {
   const navigate = useNavigate();
 
   const fetchInfo = async (page) => {
-    const query = new URLSearchParams({ page, limit: 10 }).toString();
+    const query = new URLSearchParams({ page, limit: 5 }).toString();
     await fetch(`http://localhost:4000/allproducts?${query}`)
       .then((res) => res.json())
       .then((data) => {
@@ -75,7 +75,6 @@ const ListProduct = () => {
               <th className="p-2">Color</th> */}
               <th className="p-2">Quantity</th>
               <th className="p-2">Date</th>
-              <th className="p-2">Available</th>
               <th className="p-2">Tags</th>
               <th className="p-2">Action</th>
             </tr>
@@ -104,7 +103,6 @@ const ListProduct = () => {
                 <td>{product.variants.map(variant => variant.color).join(', ')}</td> */}
                 <td>{calculateTotalQuantity(product.variants)}</td>
                 <td>{new Date(product.date).toLocaleDateString()}</td>
-                <td className={product.available ? "text-green-500" : ""}>{product.available ? "Yes" : "No"}</td>
                 <td>{product.tags ? product.tags : 'No Tag'}</td>
                 <td>
                   <button

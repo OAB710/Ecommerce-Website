@@ -9,7 +9,7 @@ const EditUser = () => {
     name: "",
     email: "",
     phone: "",
-    address: [""], // Initialize with an array
+    addresses: [{ name: "", contact: "", address: "" }], // Initialize with an array of objects
     role: "customer",
     isBanned: false,
   });
@@ -34,27 +34,27 @@ const EditUser = () => {
     }));
   };
 
-  const addressChangeHandler = (index, value) => {
-    const updatedAddresses = [...userDetails.address];
-    updatedAddresses[index] = value;
+  const addressChangeHandler = (index, field, value) => {
+    const updatedAddresses = [...userDetails.addresses];
+    updatedAddresses[index][field] = value;
     setUserDetails((prevDetails) => ({
       ...prevDetails,
-      address: updatedAddresses,
+      addresses: updatedAddresses,
     }));
   };
 
   const addAddress = () => {
     setUserDetails((prevDetails) => ({
       ...prevDetails,
-      address: [...prevDetails.address, ""],
+      addresses: [...prevDetails.addresses, { name: "", contact: "", address: "" }],
     }));
   };
 
   const removeAddress = (index) => {
-    const updatedAddresses = userDetails.address.filter((_, i) => i !== index);
+    const updatedAddresses = userDetails.addresses.filter((_, i) => i !== index);
     setUserDetails((prevDetails) => ({
       ...prevDetails,
-      address: updatedAddresses,
+      addresses: updatedAddresses,
     }));
   };
 
@@ -136,14 +136,30 @@ const EditUser = () => {
       </div>
       <div className="mb-3">
         <h4 className="bold-18 pb-2">Addresses:</h4>
-        {userDetails.address.map((addr, index) => (
+        {userDetails.addresses.map((addr, index) => (
           <div key={index} className="flex items-center gap-x-4 mb-2">
             <input
-              value={addr}
-              onChange={(e) => addressChangeHandler(index, e.target.value)}
+              value={addr.name}
+              onChange={(e) => addressChangeHandler(index, 'name', e.target.value)}
               type="text"
-              name={`address-${index}`}
-              placeholder="Type here.."
+              name={`address-name-${index}`}
+              placeholder="Name"
+              className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
+            />
+            <input
+              value={addr.contact}
+              onChange={(e) => addressChangeHandler(index, 'contact', e.target.value)}
+              type="text"
+              name={`address-contact-${index}`}
+              placeholder="Contact"
+              className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
+            />
+            <input
+              value={addr.address}
+              onChange={(e) => addressChangeHandler(index, 'address', e.target.value)}
+              type="text"
+              name={`address-address-${index}`}
+              placeholder="Address"
               className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
             />
             <button onClick={() => removeAddress(index)} className="btn_dark_rounded flexCenter gap-x-1">
