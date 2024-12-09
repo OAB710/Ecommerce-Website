@@ -50,15 +50,15 @@ const Navbar = ({ containerStyles }) => {
           </div>
         )}
       </div>
-      <NavLink to={'/mens'} className={({isActive}) => isActive ? "active_link" : ""}>
+      {/* <NavLink to={'/mens'} className={({isActive}) => isActive ? "active_link" : ""}>
         <div className="flexCenter gap-x-1"><MdCategory />Men's</div>
+      </NavLink> */}
+      <NavLink to={'/shop'} className={({isActive}) => isActive ? "active_link" : ""}>
+        <div className="flexCenter gap-x-1"><MdShop2 />Go to shop</div>
       </NavLink>
-      <NavLink to={'/womens'} className={({isActive}) => isActive ? "active_link" : ""}>
-        <div className="flexCenter gap-x-1"><MdShop2 />Women's</div>
-      </NavLink>
-      <NavLink to={'/kids'} className={({isActive}) => isActive ? "active_link" : ""}>
+      {/* <NavLink to={'/kids'} className={({isActive}) => isActive ? "active_link" : ""}>
         <div className="flexCenter gap-x-1"><MdContacts />Kid's</div>
-      </NavLink>
+      </NavLink> */}
       
     </nav>
   );

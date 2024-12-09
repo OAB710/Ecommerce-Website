@@ -443,15 +443,26 @@ const CartItems = () => {
               </div>
               <div className="mb-4">
                 <label className="block mb-2">Email *</label>
-                <input
-                  type="text"
-                  className="w-full p-2 border border-gray-300"
-                  value={user.email}
-                  onChange={(e) =>
-                    setOrderDetails({ ...orderDetails, email: e.target.value })
-                  }
-                  required={true}
-                />
+                {localStorage.getItem("auth-token") ? (
+                  <input
+                    type="text"
+                    className="w-full p-2 border border-gray-300"
+                    value={user.email}
+                    onChange={(e) =>
+                      setOrderDetails({ ...orderDetails, email: e.target.value })
+                    }
+                    required={true}
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    className="w-full p-2 border border-gray-300"
+                    onChange={(e) =>
+                      setOrderDetails({ ...orderDetails, email: e.target.value })
+                    }
+                    required={true}
+                  />
+                )}
               </div>
               <div className="mb-4">
                 <label className="block mb-2">Contact *</label>
