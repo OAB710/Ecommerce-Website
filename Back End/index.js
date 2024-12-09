@@ -987,12 +987,13 @@ app.post('/addorder', fetchUser, async (req, res) => {
     });
 
     await order.save();
+    sendOrderConfirmationEmail(order);
+
 
     // Add loyalty points to user's balance
     //user.LoyaltyPoints += loyaltyPointsEarned;
     user.markModified('LoyaltyPoints');
     await user.save();
-
     res.json({ success: true, message: "Order placed successfully", order });
   } catch (error) {
     console.error("Error placing order:", error);
@@ -1444,7 +1445,7 @@ app.get('/reviews/:productId', async (req, res) => {
   }
 });
 app.get('/products', async (req, res) => {
-  const { page = 1, limit = 10, search = '', category = '', tag = '', sort = '' } = req.query;
+  const { page = 1, limit = 10, search = '', category = '', tags = '', sort = '' } = req.query;
   const skip = (page - 1) * limit;
   let query = {};
 
@@ -1454,8 +1455,8 @@ app.get('/products', async (req, res) => {
   if (category) {
     query.category = category;
   }
-  if (tag) {
-    query.tags = tag;
+  if (tags) {
+    query.tags = { $in: tags.split(',') };
   }
 
   let sortOption = {};
@@ -1463,8 +1464,6 @@ app.get('/products', async (req, res) => {
     sortOption.new_price = 1;
   } else if (sort === 'price-desc') {
     sortOption.new_price = -1;
-  } else if (sort === 'relevance') {
-    sortOption.date = -1;
   }
 
   try {
@@ -1515,6 +1514,84 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const sendOrderConfirmationEmail = (order) => {
+  const orderDetailsTable = `
+    <h2>Thank you for your order!</h2>
+    <p>Order Details:</p>
+    <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+      <tr>
+        <th>Order ID</th>
+        <td>${order._id}</td>
+      </tr>
+      <tr>
+        <th>Name</th>
+        <td>${order.name}</td>
+      </tr>
+      <tr>
+        <th>Email</th>
+        <td>${order.email}</td>
+      </tr>
+      <tr>
+        <th>Phone</th>
+        <td>${order.phone}</td>
+      </tr>
+      <tr>
+        <th>Shipping Address</th>
+        <td>${order.shippingAddress}</td>
+      </tr>
+      <tr>
+        <th>Payment Method</th>
+        <td>${order.paymentMethod}</td>
+      </tr>
+      <tr>
+        <th>Total</th>
+        <td>${order.total}</td>
+      </tr>
+      <tr>
+        <th>Status</th>
+        <td>${order.status}</td>
+      </tr>
+      <tr>
+        <th>Date</th>
+        <td>${order.date}</td>
+      </tr>
+    </table>
+    <h3>Products:</h3>
+    <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+      <tr>
+        <th>Product Name</th>
+        <th>Size</th>
+        <th>Color</th>
+        <th>Quantity</th>
+        <th>Price</th>
+      </tr>
+      ${order.products.map(product => `
+        <tr>
+          <td>${product.name}</td>
+          <td>${product.variants.size}</td>
+          <td>${product.variants.color}</td>
+          <td>${product.quantity}</td>
+          <td>${product.price}</td>
+        </tr>
+      `).join('')}
+    </table>
+  `;
+
+  const mailOptions = {
+    from: 'trungductwice@gmail.com',
+    to: order.email,
+    subject: 'Order Confirmation',
+    html: orderDetailsTable,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error('Error sending email:', error);
+    } else {
+      console.log('Email sent:', info.response);
+    }
+  });
+};
 // app.post('/forgotpassword', async (req, res) => {
 //   const { email } = req.body;
 //   if (!email) {
@@ -1796,5 +1873,23 @@ app.post('/verify-password', (req, res) => {
     res.json({ isValid: true });
   } else {
     res.status(400).json({ isValid: false });
+  }
+});
+// Example endpoint in your backend
+app.get('/top-buyers', async (req, res) => {
+  try {
+    const topBuyers = await Order.aggregate([
+      { $unwind: '$products' },
+      { $group: { _id: '$user', purchaseCount: { $sum: '$products.quantity' } } },
+      { $sort: { purchaseCount: -1 } },
+      { $limit: 3 },
+      { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'userDetails' } },
+      { $unwind: '$userDetails' },
+      { $project: { _id: 1, purchaseCount: 1, name: '$userDetails.name' } },
+    ]);
+    res.json(topBuyers);
+  } catch (error) {
+    console.error('Error fetching top buyers:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while fetching top buyers' });
   }
 });
