@@ -1,4 +1,3 @@
-
 import React from "react";
 
 const Pagination = ({ itemsPerPage, totalItems, paginate, currentPage }) => {
@@ -10,10 +9,17 @@ const Pagination = ({ itemsPerPage, totalItems, paginate, currentPage }) => {
 
   return (
     <nav>
-      <ul className="pagination">
+      <ul className="pagination flex justify-center">
         {pageNumbers.map((number) => (
           <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
-            <a onClick={() => paginate(number)} href="!#" className="page-link">
+            <a
+              onClick={(e) => {
+                e.preventDefault();
+                paginate(number);
+              }}
+              href="#"
+              className="page-link bg-[#FF813F] text-white px-3 py-1 mx-1 rounded"
+            >
               {number}
             </a>
           </li>

@@ -8,6 +8,7 @@ const OrderDetail = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [reviews, setReviews] = useState({});
+  const [showMessage, setShowMessage] = useState(false); // State for showing the message
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -32,7 +33,6 @@ const OrderDetail = () => {
         );
         const reviewsData = await reviewsResponse.json();
         if (reviewsData.success) {
-          console.log("Reviews Data:", reviewsData.reviews); // Thêm dòng này để kiểm tra dữ liệu review
           setReviews(
             reviewsData.reviews.reduce((acc, review) => {
               acc[review.product] = review;
@@ -49,12 +49,13 @@ const OrderDetail = () => {
   }, [orderId]);
 
   const handleReviewClick = (product) => {
-    if (orderDetails.status.toLowerCase() === "delivered") {
-      setSelectedProduct(product);
-      setShowPopup(true);
-    } else {
-      alert("You can only write a review for delivered orders.");
+
+    if (orderDetails.status !== "delivered") {
+      setShowMessage(true); // Show the message if the order is not delivered
+      return;
     }
+    setSelectedProduct(product);
+    setShowPopup(true);
   };
 
   if (!orderDetails) {
@@ -62,10 +63,7 @@ const OrderDetail = () => {
   }
 
   return (
-    <div
-      className="mt-[4.5rem] bg-gray-100 mt-5"
-      style={{ backgroundColor: "#F3F4F6" }}
-    >
+    <div className="mt-[4.5rem] bg-gray-100 mt-5" style={{ backgroundColor: "#F3F4F6" }}>
       <div className="max-w-5xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-4">ID: {orderDetails._id}</h1>
         <p className="mb-2">
@@ -126,6 +124,20 @@ const OrderDetail = () => {
           review={reviews[selectedProduct.product]}
           orderId={orderDetails._id} // Truyền orderId vào đây
         />
+      )}
+      {showMessage && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 className="text-xl font-semibold mb-4">Notice</h2>
+            <p>Can only review when status is "delivered"</p>
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
+              onClick={() => setShowMessage(false)}
+            >
+              OK
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

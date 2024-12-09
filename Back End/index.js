@@ -1923,3 +1923,58 @@ app.get('/top-buyers', async (req, res) => {
     res.status(500).json({ success: false, message: 'An error occurred while fetching top buyers' });
   }
 });
+app.post('/updateproductquantity', async (req, res) => {
+  const { productId, size, color, quantity } = req.body;
+
+  if (!productId || !size || !color || !quantity) {
+    return res.status(400).json({
+      success: false,
+      message: "Product ID, size, color, and quantity are required",
+    });
+  }
+
+  try {
+    const product = await Product.findOne({ id: productId });
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    const variant = product.variants.find(
+      (variant) => variant.size === size && variant.color === color
+    );
+
+    if (!variant) {
+      return res.status(404).json({
+        success: false,
+        message: "Variant not found",
+      });
+    }
+
+    variant.quantity -= quantity;
+
+    if (variant.quantity < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Insufficient stock",
+      });
+    }
+
+    await product.save();
+
+    res.json({
+      success: true,
+      message: "Product quantity updated successfully",
+      product,
+    });
+  } catch (error) {
+    console.error("Error updating product quantity:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while updating the product quantity",
+    });
+  }
+});

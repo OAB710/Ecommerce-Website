@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Pagination from '../components/Pagination';
 
 const Order = () => {
   const [orders, setOrders] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [ordersPerPage] = useState(3); // Number of orders per page
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -58,12 +61,20 @@ const Order = () => {
     navigate(`/order/${orderId}`);
   };
 
+  // Get current orders
+  const indexOfLastOrder = currentPage * ordersPerPage;
+  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+  const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
     <section>
       <div className="bg-gray-100 min-h-screen mt-5">
         <div className="max-w-4xl mx-auto p-4 mt-16">
           <h1 className="text-2xl font-bold mb-4">My Orders</h1>
-          {orders.map((order, index) => (
+          {currentOrders.map((order, index) => (
             <div key={index} className="bg-white p-4 rounded-lg shadow mb-4">
               <h2 className="text-lg font-semibold">{order._id} - {new Date(order.date).toLocaleDateString()}</h2>
               <p className="mt-2"><span className='font-bold'>Shipping Information:</span> {order.name}, {order.phone}, {order.shippingAddress}</p>
@@ -85,6 +96,12 @@ const Order = () => {
               )}
             </div>
           ))}
+          <Pagination
+            itemsPerPage={ordersPerPage}
+            totalItems={orders.length}
+            paginate={paginate}
+            currentPage={currentPage}
+          />
         </div>
       </div>
     </section>
