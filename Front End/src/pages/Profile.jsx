@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import withAuth from '../components/withAuth';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Profile = () => {
   const [profile, setProfile] = useState({
@@ -16,6 +18,11 @@ const Profile = () => {
     oldPassword: "",
     newPassword: "",
     confirmNewPassword: "",
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    oldPassword: false,
+    newPassword: false,
+    confirmNewPassword: false,
   });
   const navigate = useNavigate();
 
@@ -55,6 +62,13 @@ const Profile = () => {
     }));
   };
 
+  const toggleShowPassword = (field) => {
+    setShowPasswords((prevShowPasswords) => ({
+      ...prevShowPasswords,
+      [field]: !prevShowPasswords[field],
+    }));
+  };
+
   const verifyOldPassword = async () => {
     try {
       const response = await fetch("http://localhost:4000/login", {
@@ -75,24 +89,24 @@ const Profile = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     const profileData = { ...profile };
-  
+
     if (showPasswordFields) {
       if (passwords.newPassword !== passwords.confirmNewPassword) {
         alert("Passwords do not match");
         return;
       }
-  
+
       const isOldPasswordValid = await verifyOldPassword();
       if (!isOldPasswordValid) {
         alert("Old password is incorrect");
         return;
       }
-  
+
       profileData.password = passwords.newPassword;
     }
-  
+
     console.log("Profile Data to be updated:", profileData);
-  
+
     try {
       const response = await fetch("http://localhost:4000/profile", {
         method: "PUT",
@@ -102,7 +116,7 @@ const Profile = () => {
         },
         body: JSON.stringify(profileData),
       });
-  
+
       if (response.ok) {
         console.log("Profile updated successfully:", profileData);
         alert("Profile updated successfully");
@@ -224,7 +238,7 @@ const Profile = () => {
           </div>
           {showPasswordFields && (
             <>
-              <div className="mb-4">
+              <div className="mb-4 relative">
                 <label
                   className="block text-gray-700 font-bold mb-2"
                   htmlFor="oldPassword"
@@ -234,13 +248,20 @@ const Profile = () => {
                 <input
                   className="w-full px-3 py-2 border rounded"
                   id="oldPassword"
-                  type="password"
+                  type={showPasswords.oldPassword ? "text" : "password"}
                   value={passwords.oldPassword}
                   onChange={handlePasswordChange}
                   required
                 />
+                <button
+                  type="button"
+                  className="absolute right-3 top-10"
+                  onClick={() => toggleShowPassword("oldPassword")}
+                >
+                  {showPasswords.oldPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
               </div>
-              <div className="mb-4">
+              <div className="mb-4 relative">
                 <label
                   className="block text-gray-700 font-bold mb-2"
                   htmlFor="newPassword"
@@ -250,13 +271,20 @@ const Profile = () => {
                 <input
                   className="w-full px-3 py-2 border rounded"
                   id="newPassword"
-                  type="password"
+                  type={showPasswords.newPassword ? "text" : "password"}
                   value={passwords.newPassword}
                   onChange={handlePasswordChange}
                   required
                 />
+                <button
+                  type="button"
+                  className="absolute right-3 top-10"
+                  onClick={() => toggleShowPassword("newPassword")}
+                >
+                  {showPasswords.newPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
               </div>
-              <div className="mb-4">
+              <div className="mb-4 relative">
                 <label
                   className="block text-gray-700 font-bold mb-2"
                   htmlFor="confirmNewPassword"
@@ -266,11 +294,18 @@ const Profile = () => {
                 <input
                   className="w-full px-3 py-2 border rounded"
                   id="confirmNewPassword"
-                  type="password"
+                  type={showPasswords.confirmNewPassword ? "text" : "password"}
                   value={passwords.confirmNewPassword}
                   onChange={handlePasswordChange}
                   required
                 />
+                <button
+                  type="button"
+                  className="absolute right-3 top-10"
+                  onClick={() => toggleShowPassword("confirmNewPassword")}
+                >
+                  {showPasswords.confirmNewPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
               </div>
             </>
           )}
@@ -293,7 +328,14 @@ const Profile = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setShowPasswordFields(!showPasswordFields)}
+                onClick={() => {
+                  setShowPasswordFields(!showPasswordFields);
+                  setPasswords({
+                    oldPassword: "",
+                    newPassword: "",
+                    confirmNewPassword: "",
+                  });
+                }}
                 className="w-1/2 px-4 py-2 bg-gray-500 text-white font-bold rounded"
               >
                 CHANGE PASSWORD
@@ -327,4 +369,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default withAuth(Profile);

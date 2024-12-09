@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Pagination from '../components/Pagination';
-
+import withAuth from '../components/withAuth';
 const Order = () => {
   const [orders, setOrders] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -108,4 +108,4 @@ const Order = () => {
   );
 };
 
-export default Order;
+export default withAuth(Order);
