@@ -991,7 +991,7 @@ app.post('/addorder', fetchUser, async (req, res) => {
 
 
     // Add loyalty points to user's balance
-    //user.LoyaltyPoints += loyaltyPointsEarned;
+    user.LoyaltyPoints += loyaltyPointsEarned;
     user.markModified('LoyaltyPoints');
     await user.save();
     res.json({ success: true, message: "Order placed successfully", order });

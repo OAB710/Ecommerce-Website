@@ -109,7 +109,7 @@ const CartItems = () => {
       return;
     }
 
-    const discountAmount = (pointsValue / 50) * 50000;
+    const discountAmount = (pointsValue / 50000) * 50000;
     alert("Points redeemed successfully!");
     setPointsDiscount(discountAmount);
     setPoints(""); // Clear the input field
@@ -343,7 +343,7 @@ const CartItems = () => {
                     <div className="flexBetween py-4">
                       <h4 className="medium-16">Point Discount:</h4>
                       <h4 className="text-gray-30 font-semibold">
-                        {pointsDiscount} đ
+                        {formatPrice(pointsDiscount)}
                       </h4>
                     </div>
                     <hr />
@@ -387,7 +387,7 @@ const CartItems = () => {
                 </div>
               </div>
               <div className="flex flex-col gap-10">
-                <h4 className="bold-20">Redeem Points (50 Points / 50000 đ)</h4>
+                <h4 className="bold-20">Redeem Points (50,000 Points / 50,000 đ)</h4>
                 <h6 className="-mt-10 font-semibold">
                   The points must be a multiple of 50
                 </h6>
@@ -441,17 +441,28 @@ const CartItems = () => {
                   required={true}
                 />
               </div>
-              <div className="mb-4">
+                            <div className="mb-4">
                 <label className="block mb-2">Email *</label>
-                <input
-                  type="text"
-                  className="w-full p-2 border border-gray-300"
-                  value={user.email}
-                  onChange={(e) =>
-                    setOrderDetails({ ...orderDetails, email: e.target.value })
-                  }
-                  required={true}
-                />
+                {localStorage.getItem("auth-token") ? (
+                  <input
+                    type="text"
+                    className="w-full p-2 border border-gray-300"
+                    value={user.email}
+                    onChange={(e) =>
+                      setOrderDetails({ ...orderDetails, email: e.target.value })
+                    }
+                    required={true}
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    className="w-full p-2 border border-gray-300"
+                    onChange={(e) =>
+                      setOrderDetails({ ...orderDetails, email: e.target.value })
+                    }
+                    required={true}
+                  />
+                )}
               </div>
               <div className="mb-4">
                 <label className="block mb-2">Contact *</label>

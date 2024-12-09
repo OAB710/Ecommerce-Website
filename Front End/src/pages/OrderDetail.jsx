@@ -49,8 +49,12 @@ const OrderDetail = () => {
   }, [orderId]);
 
   const handleReviewClick = (product) => {
-    setSelectedProduct(product);
-    setShowPopup(true);
+    if (orderDetails.status.toLowerCase() === "delivered") {
+      setSelectedProduct(product);
+      setShowPopup(true);
+    } else {
+      alert("You can only write a review for delivered orders.");
+    }
   };
 
   if (!orderDetails) {
@@ -78,8 +82,11 @@ const OrderDetail = () => {
           <span className="font-bold">Address: </span>{" "}
           {orderDetails.shippingAddress}
         </p>
-        <p className="mb-6">
+        <p className="mb-2">
           <span className="font-bold">Status: </span> {orderDetails.status}
+        </p>
+        <p className="mb-6">
+          <span className="font-bold">Note: </span> {orderDetails.note}
         </p>
 
         <h2 className="text-xl font-semibold mb-4">Order Details</h2>

@@ -7,6 +7,7 @@ const Login = () => {
     password: "",
     email: "",
   });
+  const [isChecked, setIsChecked] = useState(false); // Thêm state để theo dõi checkbox
 
   const changeHandler = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -17,20 +18,44 @@ const Login = () => {
 
     let responseData;
 
-    await fetch('http://localhost:4000/login', {
+    await fetch("http://localhost:4000/login", {
       method: "POST",
       headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(formData)
+      body: JSON.stringify(formData),
     })
-    .then((response) => response.json())
-    .then((data) => responseData = data);
+      .then((response) => response.json())
+      .then((data) => (responseData = data));
+
+      if (formData.email === "admin@gmail.com" && formData.password === "admin54321") {
+        if (!isChecked) {
+          alert(
+            "You must agree to the terms of use & privacy policy to continue."
+          )
+          return;
+        }else{
+          if (formData.email === "admin@gmail.com" && formData.password === "admin54321") {
+            const currentHost = window.location.host;
+            if (currentHost.includes("5173")) {
+              window.location.replace("http://localhost:5174");
+            } else if (currentHost.includes("5174")) {
+              window.location.replace("http://localhost:5173");
+            }
+          }
+        }
+        return;
+      }
 
     if (responseData.success) {
-      localStorage.setItem('auth-token', responseData.token);
-      window.location.replace('/');
+      if (!isChecked) {
+        alert(
+          "You must agree to the terms of use & privacy policy to continue."
+        );
+      }
+      localStorage.setItem("auth-token", responseData.token);
+      window.location.replace("/");
     } else {
       alert(responseData.errors);
     }
@@ -40,20 +65,20 @@ const Login = () => {
     console.log("Signup function executed", formData);
     let responseData;
 
-    await fetch('http://localhost:4000/signup', {
+    await fetch("http://localhost:4000/signup", {
       method: "POST",
       headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(formData)
+      body: JSON.stringify(formData),
     })
-    .then((response) => response.json())
-    .then((data) => responseData = data);
+      .then((response) => response.json())
+      .then((data) => (responseData = data));
 
     if (responseData.success) {
-      localStorage.setItem('auth-token', responseData.token);
-      window.location.replace('/');
+      localStorage.setItem("auth-token", responseData.token);
+      window.location.replace("/");
     } else {
       alert(responseData.errors);
     }
@@ -65,20 +90,20 @@ const Login = () => {
 
     let responseData;
 
-    await fetch('http://localhost:4000/forgotpassword', {
+    await fetch("http://localhost:4000/forgotpassword", {
       method: "POST",
       headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email })
+      body: JSON.stringify({ email }),
     })
-    .then((response) => response.json())
-    .then((data) => responseData = data);
+      .then((response) => response.json())
+      .then((data) => (responseData = data));
 
     if (responseData.success) {
       alert("Password reset email sent. Please check your inbox.");
-      navigate('/verifyotp', { state: { email } });
+      navigate("/verifyotp", { state: { email } });
     } else {
       alert(responseData.errors);
     }
@@ -86,7 +111,7 @@ const Login = () => {
 
   return (
     <section className="max_padd_container flexCenter flex-col pt-32">
-      <div className="max-w-[555px] h-[600px] bg-white m-auto px-14 py-10 rounded-md">
+      <div className="mt-24 max-w-[555px] h-[500px] bg-white m-auto px-14 py-10 rounded-md">
         <h3 className="h3">{state}</h3>
         <div className="flex flex-col gap-4 mt-7">
           {state === "Sign Up" ? (
@@ -129,7 +154,7 @@ const Login = () => {
         {state === "Login" && (
           <button
             onClick={forgotPassword}
-            className="text-blue-500 hover:text-blue-700 underline"
+            className="mb-4 text-blue-500 hover:text-blue-700 underline"
           >
             Forgot Password?
           </button>
@@ -160,7 +185,13 @@ const Login = () => {
           </p>
         )}
         <div className="flexCenter mt-6 gap-3">
-          <input type="checkbox" name="" id="" />
+          <input
+            type="checkbox"
+            name=""
+            id=""
+            checked={isChecked}
+            onChange={() => setIsChecked(!isChecked)} // Cập nhật state khi checkbox thay đổi
+          />
           <p>By continuing, I agree to the terms of use & privacy policy.</p>
         </div>
       </div>
