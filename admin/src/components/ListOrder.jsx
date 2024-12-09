@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const ListOrder = () => {
   const [allOrders, setAllOrders] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [filter, setFilter] = useState('');
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
   const navigate = useNavigate();
 
-  const fetchOrders = async (page) => {
-    const query = new URLSearchParams({ page, limit: 10 }).toString();
+  const fetchOrders = async (page, filter, startDate, endDate) => {
+    const formattedStartDate = startDate ? startDate.toISOString() : '';
+    const formattedEndDate = endDate ? endDate.toISOString() : '';
+    const query = new URLSearchParams({ page, limit: 10, filter, startDate: formattedStartDate, endDate: formattedEndDate }).toString();
     await fetch(`http://localhost:4000/allorders?${query}`)
       .then((res) => res.json())
       .then((data) => {
@@ -18,8 +25,8 @@ const ListOrder = () => {
   };
 
   useEffect(() => {
-    fetchOrders(page);
-  }, [page]);
+    fetchOrders(page, filter, startDate, endDate);
+  }, [page, filter, startDate, endDate]);
 
   const view_order = (id) => {
     navigate(`/vieworder/${id}`);
@@ -29,10 +36,64 @@ const ListOrder = () => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "đ";
   };
 
+  const handleFilterChange = (event) => {
+    const newFilter = event.target.value;
+    const today = new Date();
+    let start, end;
+
+    switch (newFilter) {
+      case 'today':
+        start = new Date(today.setHours(0, 0, 0, 0));
+        end = new Date(today.setHours(23, 59, 59, 999));
+        break;
+      case 'this_week':
+        start = new Date(today.setDate(today.getDate() - today.getDay()));
+        end = new Date(today.setDate(today.getDate() - today.getDay() + 6));
+        break;
+      case 'this_month':
+        start = new Date(today.getFullYear(), today.getMonth(), 1);
+        end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        break;
+      default:
+        start = null;
+        end = null;
+    }
+
+    setFilter(newFilter);
+    setStartDate(start);
+    setEndDate(end);
+    setPage(1);
+  };
+
+  const handleDateRangeChange = (dates) => {
+    const [start, end] = dates;
+    setStartDate(start);
+    setEndDate(end);
+    setPage(1);
+  };
+
   return (
     <div className="p-2 box-border bg-white mb-6 rounded-sm w-full mt-4 sm:p-4 sm:m-7">
       <div className="flex justify-between items-center p-5">
         <h4 className="bold-22 uppercase">Orders List</h4>
+      </div>
+      <div className="flex justify-between items-center p-5">
+      <select onChange={handleFilterChange} className="select_filter">
+        <option value="" style={{ fontWeight: 'bold' }}>Select Filter</option>
+        <option value="today">Today</option>
+        <option value="this_week">This Week</option>
+        <option value="this_month">This Month</option>
+      </select>
+        <DatePicker
+          selected={startDate}
+          onChange={handleDateRangeChange}
+          startDate={startDate}
+          endDate={endDate}
+          selectsRange
+          isClearable
+          placeholderText="Select date range"
+          className="date-picker"
+        />
       </div>
       <div className="max-h-[77vh] overflow-auto px-4 text-center">
         <table className="w-full mx-auto">
