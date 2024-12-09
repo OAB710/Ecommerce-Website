@@ -192,15 +192,14 @@ const User = mongoose.model('User', {
     {
       name: {
         type: String,
-        required: true,
+
       },
       contact: {
         type: String,
-        required: true,
+
       },
       address: {
         type: String,
-        required: true,
       },
     },
   ],
@@ -534,8 +533,8 @@ app.post('/signup', async (req, res) => {
       name: req.body.name, // Đảm bảo rằng trường name được lấy đúng cách
       email: req.body.email,
       password: req.body.password,
-      phone: req.body.phone,
-      address: req.body.address,
+      phone: "0",
+      address: "None",
       addresses: req.body.addresses || [],
       role: req.body.role || 'customer',
       LoyaltyPoints: req.body.LoyaltyPoints || 0,
@@ -1076,6 +1075,20 @@ app.post('/clearcart', fetchUser, async (req, res) => {
     }
   } catch (error) {
     console.error("Error clearing cart:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+app.get('/myorders', fetchUser, async (req, res) => {
+  try {
+    const orders = await Order.find({ user: req.user.id });
+    if (orders.length > 0) {
+      res.json({ success: true, orders });
+    } else {
+      res.status(404).json({ success: false, message: "No orders found for this user" });
+    }
+  } catch (error) {
+    console.error("Error fetching user orders:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });

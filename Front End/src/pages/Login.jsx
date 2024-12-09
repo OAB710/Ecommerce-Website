@@ -3,7 +3,7 @@ import React, { useState } from "react";
 const Login = () => {
   const [state, setState] = useState("Login");
   const [formData, setFormData] = useState({
-    username: "",
+    name: "",
     password: "",
     email: "",
   });
@@ -117,8 +117,8 @@ const Login = () => {
         <div className="flex flex-col gap-4 mt-7">
           {state === "Sign Up" ? (
             <input
-              name="username"
-              value={formData.username}
+              name="name"
+              value={formData.name}
               onChange={changeHandler}
               type="text"
               placeholder="Your Name"

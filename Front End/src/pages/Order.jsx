@@ -8,7 +8,7 @@ const Order = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch('http://localhost:4000/allorders', {
+        const response = await fetch('http://localhost:4000/myorders', {
           method: 'GET',
           headers: {
             'auth-token': localStorage.getItem('auth-token'),
