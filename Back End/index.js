@@ -529,11 +529,20 @@ app.post('/signup', async (req, res) => {
       });
     }
 
+    let existingUserByPhone = await User.findOne({ phone: req.body.phone });
+    if (existingUserByPhone) {
+      console.log("Existing user found with same phone number:", existingUserByPhone);
+      return res.status(400).json({
+        success: false,
+        errors: "Existing user found with same phone number"
+      });
+    }
+
     const user = new User({
       name: req.body.name, // Đảm bảo rằng trường name được lấy đúng cách
       email: req.body.email,
       password: req.body.password,
-      phone: "0",
+      phone: req.body.phone,
       address: "None",
       addresses: req.body.addresses || [],
       role: req.body.role || 'customer',
