@@ -135,6 +135,7 @@ const EditUser = () => {
         {errors.phone && <div className="text-red-500">{errors.phone}</div>}
       </div>
       <div className="mb-3">
+
         <h4 className="bold-18 pb-2">Addresses:</h4>
         {userDetails.addresses.map((addr, index) => (
           <div key={index} className="flex items-center gap-x-4 mb-2">
@@ -162,14 +163,8 @@ const EditUser = () => {
               placeholder="Address"
               className="bg-primary outline-none max-w-80 w-full py-3 px-4 rounded-md"
             />
-            <button onClick={() => removeAddress(index)} className="btn_dark_rounded flexCenter gap-x-1">
-              <MdRemove />
-            </button>
           </div>
         ))}
-        <button onClick={addAddress} className="btn_dark_rounded flexCenter gap-x-1">
-          <MdAdd /> Add Address
-        </button>
       </div>
       <div className="mb-3 flex items-center gap-x-4">
         <h4 className="bold-18 pb-2">User Role:</h4>

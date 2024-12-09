@@ -49,6 +49,7 @@ const OrderDetail = () => {
   }, [orderId]);
 
   const handleReviewClick = (product) => {
+
     if (orderDetails.status !== "delivered") {
       setShowMessage(true); // Show the message if the order is not delivered
       return;
@@ -79,8 +80,11 @@ const OrderDetail = () => {
           <span className="font-bold">Address: </span>{" "}
           {orderDetails.shippingAddress}
         </p>
-        <p className="mb-6">
+        <p className="mb-2">
           <span className="font-bold">Status: </span> {orderDetails.status}
+        </p>
+        <p className="mb-6">
+          <span className="font-bold">Note: </span> {orderDetails.note}
         </p>
 
         <h2 className="text-xl font-semibold mb-4">Order Details</h2>

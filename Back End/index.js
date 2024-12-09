@@ -965,8 +965,7 @@ app.post('/addorder', fetchUser, async (req, res) => {
     const loyaltyPointsEarned = Math.floor(total * 0.05);
 
     // Deduct redeem points from total if applicable
-
-      user.LoyaltyPoints -= LoyaltyPoints;
+    user.LoyaltyPoints -= LoyaltyPoints;
 
     const order = new Order({
       user: user._id,
@@ -986,14 +985,32 @@ app.post('/addorder', fetchUser, async (req, res) => {
       note,
     });
 
+    // Save the order
     await order.save();
-    sendOrderConfirmationEmail(order);
 
+    // Update product quantities
+    for (const product of products) {
+      const dbProduct = await Product.findById(product.product);
+      if (dbProduct) {
+        const variant = dbProduct.variants.find(v => v.size === product.variants.size && v.color === product.variants.color);
+        if (variant) {
+          variant.quantity -= product.quantity;
+          if (variant.quantity < 0) {
+            variant.quantity = 0; // Ensure quantity doesn't go below 0
+          }
+        }
+        dbProduct.markModified('variants');
+        await dbProduct.save();
+      }
+    }
+
+    //sendOrderConfirmationEmail(order);
 
     // Add loyalty points to user's balance
-    //user.LoyaltyPoints += loyaltyPointsEarned;
+    user.LoyaltyPoints += loyaltyPointsEarned;
     user.markModified('LoyaltyPoints');
     await user.save();
+
     res.json({ success: true, message: "Order placed successfully", order });
   } catch (error) {
     console.error("Error placing order:", error);
