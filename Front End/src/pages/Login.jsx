@@ -52,7 +52,8 @@ const Login = () => {
       if (!isChecked) {
         alert(
           "You must agree to the terms of use & privacy policy to continue."
-        );
+        )
+        return;
       }
       localStorage.setItem("auth-token", responseData.token);
       window.location.replace("/");

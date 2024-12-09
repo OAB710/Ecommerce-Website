@@ -51,7 +51,7 @@ const Sidebar = () => {
       <Link to="/statistic">
         <button className="flexCenter gap-2 rounded-md bg-primary h-12 w-44 xs:w-44 medium-16">
           <img src={statisticIcon} alt="Statistic" height={50} width={50} />
-          <span>(Advanced dashboard)</span>
+          <span>Advanced dashboard</span>
         </button>
       </Link>
       

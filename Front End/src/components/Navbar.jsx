@@ -33,7 +33,7 @@ const Navbar = ({ containerStyles }) => {
           value={searchQuery}
           onChange={handleSearch}
           placeholder="Search products..."
-          className="p-2 border border-gray-300 rounded"
+          className="p-1 border border-gray-300 rounded"
         />
         {searchResults.length > 0 && (
           <div className="absolute bg-white border border-gray-300 rounded mt-1 w-full max-h-60 overflow-y-auto">
