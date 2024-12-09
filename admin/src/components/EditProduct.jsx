@@ -266,7 +266,7 @@ const EditProduct = () => {
           <option value="Lingerie">Lingerie</option>
         </select>
       </div>
-      <div className="mb-3 flex items-center gap-x-4">
+      {/* <div className="mb-3 flex items-center gap-x-4">
         <h4 className="bold-18 pb-2">Available:</h4>
         <select
           name="available"
@@ -277,7 +277,7 @@ const EditProduct = () => {
           <option value="true">Yes</option>
           <option value="false">No</option>
         </select>
-      </div>
+      </div> */}
       <button onClick={saveProduct} className="btn_dark_rounded mt-4 flexCenter gap-x-1">
         <MdSave /> Save Product
       </button>
