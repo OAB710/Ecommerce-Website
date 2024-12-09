@@ -952,30 +952,21 @@ app.post('/edituser/:id', async (req, res) => {
   }
 });
 
-app.post('/addorder', async (req, res) => {
+app.post('/addorder', fetchUser, async (req, res) => {
   try {
-    const { products, total, shippingAddress, paymentMethod, name, phone, email, note } = req.body;
-    let user;
+    const { products, total, shippingAddress, paymentMethod, name, phone, email, note, LoyaltyPoints } = req.body;
+    let user = await User.findById(req.user.id);
 
-    if (req.header('auth-token')) {
-      // User is logged in
-      const token = req.header('auth-token');
-      const data = jwt.verify(token, 'secret_ecom');
-      user = await User.findById(data.user.id);
-    } else {
-      // User is not logged in, create an account if it doesn't exist
-      user = await User.findOne({ email });
-      if (!user) {
-        user = new User({
-          name,
-          email,
-          password: Math.random().toString(36).slice(-8), // Generate a random password
-          phone,
-          address: shippingAddress,
-        });
-        await user.save();
-      }
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
     }
+
+    // Calculate loyalty points earned (5% of the total order value)
+    const loyaltyPointsEarned = Math.floor(total * 0.05);
+
+    // Deduct redeem points from total if applicable
+
+      user.LoyaltyPoints -= LoyaltyPoints;
 
     const order = new Order({
       user: user._id,
@@ -989,14 +980,20 @@ app.post('/addorder', async (req, res) => {
       total,
       shippingAddress,
       paymentMethod,
-      name, // Include name from orderDetails
-      email, // Include email from orderDetails
-      phone, // Include contact from orderDetails
-      note, // Add note field
+      name,
+      email,
+      phone,
+      note,
     });
 
     await order.save();
     sendOrderConfirmationEmail(order);
+
+
+    // Add loyalty points to user's balance
+    //user.LoyaltyPoints += loyaltyPointsEarned;
+    user.markModified('LoyaltyPoints');
+    await user.save();
     res.json({ success: true, message: "Order placed successfully", order });
   } catch (error) {
     console.error("Error placing order:", error);

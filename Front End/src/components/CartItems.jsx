@@ -22,10 +22,12 @@ const CartItems = () => {
   } = useContext(ShopContext);
 
   const [couponCode, setCouponCode] = useState("");
-  const [mainImage, setMainImage] = useState("");
+  const [pointsDiscount, setPointsDiscount] = useState(0);
+  const [points, setPoints] = useState("");
   const [orderDetails, setOrderDetails] = useState({
     name: user.name,
     email: user.email,
+    LoyaltyPoints: user.LoyaltyPoints,
     contact: user.contact,
     address: user.address,
   });
@@ -96,6 +98,24 @@ const CartItems = () => {
     );
   }
 
+  const handleRedeemPoints = () => {
+    const pointsValue = parseInt(points);
+    if (isNaN(pointsValue) || pointsValue % 50 !== 0) {
+      alert("Please enter a multiple of 50");
+      return;
+    }
+    if (pointsValue > user.LoyaltyPoints) {
+      alert("You do not have enough points.");
+      return;
+    }
+
+    const discountAmount = (pointsValue / 50) * 50000;
+    alert("Points redeemed successfully!");
+    setPointsDiscount(discountAmount);
+    setPoints(""); // Clear the input field
+  };
+
+  // Front End/src/components/CartItems.jsx
   const handleOrder = async () => {
     navigate("/orders");
     const orderData = {
@@ -115,13 +135,14 @@ const CartItems = () => {
           shortDescription: product.shortDescription,
         };
       }),
-      total: getTotalCartAmount() - discount,
+      total: getTotalCartAmount() - discount - pointsDiscount,
       shippingAddress: orderDetails.address,
       paymentMethod: paymentMethod === "COD" ? "COD" : "Banking",
       name: orderDetails.name,
       phone: orderDetails.contact,
       email: user.email,
       note: orderDetails.note, // Add note field
+      LoyaltyPoints: pointsDiscount / 1000, // Assuming 1 point = 1000 currency units
     };
 
     const response = await fetch("http://localhost:4000/addorder", {
@@ -317,13 +338,25 @@ const CartItems = () => {
                     <hr />
                   </>
                 )}
+                {pointsDiscount > 0 && (
+                  <>
+                    <div className="flexBetween py-4">
+                      <h4 className="medium-16">Point Discount:</h4>
+                      <h4 className="text-gray-30 font-semibold">
+                        {pointsDiscount} đ
+                      </h4>
+                    </div>
+                    <hr />
+                  </>
+                )}
                 <div className="flexBetween py-4">
                   <h4 className="bold-18">Total:</h4>
                   <h4 className="bold-18">
                     {formatPrice(Math.max(
                       0,
                       getTotalCartAmount() -
-                        discount +
+                        discount -
+                        pointsDiscount +
                         (getTotalCartAmount() > 399000 ? 0 : 20000)
                     ))}{" "}
                     đ
@@ -353,6 +386,27 @@ const CartItems = () => {
                   </button>
                 </div>
               </div>
+              <div className="flex flex-col gap-10">
+                <h4 className="bold-20">Redeem Points (50 Points / 50000 đ)</h4>
+                <h6 className="-mt-10 font-semibold">
+                  The points must be a multiple of 50
+                </h6>
+                <div className="flexBetween pl-5 h-12 bg-primary rounded-full ring-1 ring-slate-900/10">
+                  <input
+                    type="text"
+                    placeholder="Points"
+                    className="bg-transparent border-none outline-none"
+                    value={points}
+                    onChange={(e) => setPoints(e.target.value)}
+                  />
+                  <button
+                    className="btn_dark_rounded"
+                    onClick={handleRedeemPoints}
+                  >
+                    Submit
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           <div className="w-full md:w-1/2 p-4 bg-white">
@@ -375,6 +429,15 @@ const CartItems = () => {
                   onChange={(e) =>
                     setOrderDetails({ ...orderDetails, name: e.target.value })
                   }
+                  required={true}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block mb-2">Loyalty Points *</label>
+                <input
+                  type="text"
+                  className="w-full p-2 border text-red-500 border-gray-300"
+                  value={user.LoyaltyPoints}
                   required={true}
                 />
               </div>
