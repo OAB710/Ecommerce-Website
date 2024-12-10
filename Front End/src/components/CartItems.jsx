@@ -476,10 +476,10 @@ const CartItems = () => {
               </div>
               <div className="mb-4">
                 <label className="block mb-2">Loyalty Points *</label>
-                <input
+                                <input
                   type="text"
                   className="w-full p-2 border text-red-500 border-gray-300"
-                  value={user.LoyaltyPoints}
+                  value={localStorage.getItem("auth-token") ? user.LoyaltyPoints : 0}
                   required={true}
                 />
               </div>
