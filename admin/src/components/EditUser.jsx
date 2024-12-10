@@ -166,7 +166,7 @@ const EditUser = () => {
           </div>
         ))}
       </div>
-      <div className="mb-3 flex items-center gap-x-4">
+      {/* <div className="mb-3 flex items-center gap-x-4">
         <h4 className="bold-18 pb-2">User Role:</h4>
         <select
           name="role"
@@ -177,7 +177,7 @@ const EditUser = () => {
           <option value="customer">Customer</option>
           <option value="admin">Admin</option>
         </select>
-      </div>
+      </div> */}
       <div className="mb-3 flex items-center gap-x-4">
         <h4 className="bold-18 pb-2">Banned:</h4>
         <select

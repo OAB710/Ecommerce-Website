@@ -1,5 +1,5 @@
 import { Link, NavLink } from "react-router-dom";
-import logo from "../assets/logo.svg";
+import logo from "../assets/ECS.png";
 import logout from "../assets/logout.svg";
 import user from "../assets/user.svg";
 import userIcon from "../assets/user.png"; // Import the user.png icon

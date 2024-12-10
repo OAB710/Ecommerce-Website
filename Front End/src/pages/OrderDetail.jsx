@@ -114,7 +114,7 @@ const OrderDetail = () => {
         <h2 className="text-xl font-semibold mb-4">Bill</h2>
         <div className="flex justify-between border-b-2 py-2">
           <span>Total:</span>
-          <span>{orderDetails.total} đ</span>
+          <span>          {orderDetails.total < 0 ? 0 : orderDetails.total} đ</span>
         </div>
       </div>
       {showPopup && (

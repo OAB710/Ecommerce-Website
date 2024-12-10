@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Pagination from '../components/Pagination';
-import withAuth from '../components/withAuth';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Pagination from "../components/Pagination";
+import withAuth from "../components/withAuth";
 const Order = () => {
   const [orders, setOrders] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -11,20 +11,20 @@ const Order = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch('http://localhost:4000/myorders', {
-          method: 'GET',
+        const response = await fetch("http://localhost:4000/myorders", {
+          method: "GET",
           headers: {
-            'auth-token': localStorage.getItem('auth-token'),
+            "auth-token": localStorage.getItem("auth-token"),
           },
         });
         const data = await response.json();
         if (data.success) {
           setOrders(data.orders);
         } else {
-          console.error('Failed to fetch orders:', data.message);
+          console.error("Failed to fetch orders:", data.message);
         }
       } catch (error) {
-        console.error('Error fetching orders:', error);
+        console.error("Error fetching orders:", error);
       }
     };
 
@@ -33,27 +33,30 @@ const Order = () => {
 
   const handleCancelOrder = async (orderId) => {
     try {
-      const response = await fetch(`http://localhost:4000/updateorderstatus/${orderId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: 'Cancel' }),
-      });
+      const response = await fetch(
+        `http://localhost:4000/updateorderstatus/${orderId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status: "Cancel" }),
+        }
+      );
       const data = await response.json();
       if (data.success) {
         setOrders((prevOrders) =>
           prevOrders.map((order) =>
-            order._id === orderId ? { ...order, status: 'Cancel' } : order
+            order._id === orderId ? { ...order, status: "Cancel" } : order
           )
         );
-        alert('Order cancelled successfully');
+        alert("Order cancelled successfully");
       } else {
-        alert('Failed to cancel order: ' + data.message);
+        alert("Failed to cancel order: " + data.message);
       }
     } catch (error) {
-      console.error('Error cancelling order:', error);
-      alert('An error occurred while cancelling the order');
+      console.error("Error cancelling order:", error);
+      alert("An error occurred while cancelling the order");
     }
   };
 
@@ -76,17 +79,30 @@ const Order = () => {
           <h1 className="text-2xl font-bold mb-4">My Orders</h1>
           {currentOrders.map((order, index) => (
             <div key={index} className="bg-white p-4 rounded-lg shadow mb-4">
-              <h2 className="text-lg font-semibold">{order._id} - {new Date(order.date).toLocaleDateString()}</h2>
-              <p className="mt-2"><span className='font-bold'>Shipping Information:</span> {order.name}, {order.phone}, {order.shippingAddress}</p>
-              <p className="mt-2"><span className='font-bold'>Total:</span> {order.total} đ</p>
-              <p className="mt-1"><span className='font-bold'>Status: </span><span className="bg-yellow-200 px-2 py-1 rounded">{order.status}</span></p>
+              <h2 className="text-lg font-semibold">
+                {order._id} - {new Date(order.date).toLocaleDateString()}
+              </h2>
+              <p className="mt-2">
+                <span className="font-bold">Shipping Information:</span>{" "}
+                {order.name}, {order.phone}, {order.shippingAddress}
+              </p>
+              <p className="mt-2">
+                <span className="font-bold">Total:</span>{" "}
+                {order.total < 0 ? 0 : order.total}đ
+              </p>
+              <p className="mt-1">
+                <span className="font-bold">Status: </span>
+                <span className="bg-yellow-200 px-2 py-1 rounded">
+                  {order.status}
+                </span>
+              </p>
               <button
                 className="mt-2 bg-blue-200 text-blue-800 px-4 py-2 rounded"
                 onClick={() => handleViewDetails(order._id)}
               >
                 View Details
               </button>
-              {order.status === 'pending' && (
+              {order.status === "pending" && (
                 <button
                   className="ml-2 mt-2 bg-red-200 text-red-800 px-4 py-2 rounded"
                   onClick={() => handleCancelOrder(order._id)}

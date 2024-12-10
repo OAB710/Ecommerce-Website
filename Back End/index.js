@@ -632,6 +632,10 @@ app.post("/login", async (req, res) => {
   let user = await User.findOne({ email: req.body.email });
 
   if (user) {
+    if (user.isBanned) {
+      return res.json({ success: false, errors: "User is banned" });
+    }
+
     const passMatch = req.body.password === user.password;
     if (passMatch) {
       const data = {
@@ -1324,7 +1328,7 @@ app.post("/applycoupon", async (req, res) => {
         .json({ success: false, message: "Coupon has expired" });
     }
 
-    if (coupon) {
+    if (!coupon) {
       return res
         .status(404)
         .json({ success: false, message: "Coupon not found" });

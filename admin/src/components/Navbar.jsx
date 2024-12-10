@@ -1,4 +1,4 @@
-import logo from '../assets/logo.svg';
+import logo from '../assets/ECS.png';
 import profileImg from "../assets/profile.png";
 
 const Navbar = () => {
