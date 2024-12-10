@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { TbTrash } from "react-icons/tb";
 import newcouponIcon from "../assets/new-coupon.png"; // Add an icon for coupons
 
 const ListCoupon = () => {
   const [allCoupons, setAllCoupons] = useState([]);
+  const navigate = useNavigate();
 
   const fetchCoupons = async () => {
     await fetch('http://localhost:4000/allcoupons')
@@ -28,6 +29,10 @@ const ListCoupon = () => {
       body: JSON.stringify({ id: id }),
     });
     await fetchCoupons();
+  };
+
+  const editCoupon = (id) => {
+    navigate(`/editcoupon/${id}`);
   };
 
   const formatPrice = (price) => {
@@ -55,7 +60,7 @@ const ListCoupon = () => {
               <th className="p-2">Creation Time</th>
               <th className="p-2">Expiration Date</th>
               <th className="p-2">Available</th>
-              <th className="p-2">Remove</th>
+              <th className="p-2">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -65,11 +70,20 @@ const ListCoupon = () => {
                 <td>{formatPrice(coupon.discount)}</td>
                 <td>{new Date(coupon.creationTime).toLocaleString()}</td>
                 <td>{new Date(coupon.expirationDate).toLocaleDateString()}</td>
-                <td>{coupon.used ? 'Yes' : 'No'}</td>
+                <td>{coupon.used ? 'Available' : 'Not Available'}</td>
                 <td>
-                  <div className="bold-22 pl-6 sm:pl-14">
-                    <TbTrash onClick={() => removeCoupon(coupon._id)} />
-                  </div>
+                  <button
+                    onClick={() => editCoupon(coupon._id)}
+                    className="text-blue-500 hover:text-blue-700 mr-2"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => removeCoupon(coupon._id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    Remove
+                  </button>
                 </td>
               </tr>
             ))}

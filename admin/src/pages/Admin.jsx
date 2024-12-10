@@ -11,6 +11,7 @@ import Dashboard from '../components/Dashboard';
 import AddCoupon from '../components/AddCoupon';
 import ListCoupon from '../components/ListCoupon';
 import Statistic from '../components/Statistic'; // Import Statistic component
+import {EditCoupon} from '../components/EditCoupon'; // Import EditCoupon component
 import { Routes, Route } from "react-router-dom";
 
 const Admin = () => {
@@ -29,6 +30,7 @@ const Admin = () => {
         <Route path="/addcoupon" element={<AddCoupon />} />
         <Route path="/listcoupon" element={<ListCoupon />} />
         <Route path="/statistic" element={<Statistic />} /> {/* Add route for Statistic */}
+        <Route path="/editcoupon/:couponId" element={<EditCoupon />} /> {/* Add route for EditCoupon */}
       </Routes>
     </div>
   );

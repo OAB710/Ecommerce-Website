@@ -33,9 +33,12 @@ app.get("/", (req, res) => {
 
 // Image storage engine
 const storage = multer.diskStorage({
-  destination: './upload/images',
+  destination: "./upload/images",
   filename: (req, file, cb) => {
-    return cb(null, `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`);
+    return cb(
+      null,
+      `${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`
+    );
   },
 });
 
@@ -44,17 +47,21 @@ const upload = multer({
   fileFilter: (req, file, cb) => {
     const filetypes = /jpeg|jpg|png/;
     const mimetype = filetypes.test(file.mimetype);
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const extname = filetypes.test(
+      path.extname(file.originalname).toLowerCase()
+    );
     if (mimetype && extname) {
       return cb(null, true);
     }
-    cb("Error: File upload only supports the following filetypes - " + filetypes);
+    cb(
+      "Error: File upload only supports the following filetypes - " + filetypes
+    );
   },
 });
 
-app.use('/images', express.static('upload/images'));
+app.use("/images", express.static("upload/images"));
 
-app.post('/upload', upload.single('product'), (req, res) => {
+app.post("/upload", upload.single("product"), (req, res) => {
   res.json({
     success: 1,
     image_url: `http://localhost:${port}/images/${req.file.filename}`,
@@ -84,7 +91,17 @@ const Product = mongoose.model("Product", {
   },
   tags: {
     type: String,
-    enum: ['Sport', 'Casual', 'Office', 'Party', 'OutDoor', 'Loungewear', 'Sleepwear', 'Swimwear', 'Lingerie'],
+    enum: [
+      "Sport",
+      "Casual",
+      "Office",
+      "Party",
+      "OutDoor",
+      "Loungewear",
+      "Sleepwear",
+      "Swimwear",
+      "Lingerie",
+    ],
     required: true,
   },
   variants: [
@@ -166,7 +183,7 @@ const Product = mongoose.model("Product", {
 //   }
 // });
 
-const User = mongoose.model('User', {
+const User = mongoose.model("User", {
   name: {
     type: String,
     required: true,
@@ -192,11 +209,9 @@ const User = mongoose.model('User', {
     {
       name: {
         type: String,
-
       },
       contact: {
         type: String,
-
       },
       address: {
         type: String,
@@ -205,8 +220,8 @@ const User = mongoose.model('User', {
   ],
   role: {
     type: String,
-    enum: ['customer', 'admin'],
-    default: 'customer',
+    enum: ["customer", "admin"],
+    default: "customer",
   },
   LoyaltyPoints: {
     type: Number,
@@ -226,7 +241,7 @@ const User = mongoose.model('User', {
   },
 });
 //Category
-const Category = mongoose.model('Category', {
+const Category = mongoose.model("Category", {
   name: {
     type: String,
     required: true,
@@ -240,15 +255,15 @@ const Category = mongoose.model('Category', {
   },
 });
 //review
-const Review = mongoose.model('Review', {
-  order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true }, // Thêm trường order
+const Review = mongoose.model("Review", {
+  order: { type: mongoose.Schema.Types.ObjectId, ref: "Order", required: true }, // Thêm trường order
   product: { type: String, required: true },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   review: {
     type: String,
     required: true,
   },
-  rating: { 
+  rating: {
     type: Number,
     required: true,
     min: 1, // Minimum value of 1
@@ -261,19 +276,20 @@ const Review = mongoose.model('Review', {
   images: {
     type: [String],
     validate: {
-      validator: function(v) {
+      validator: function (v) {
         return v.length <= 4;
       },
-      message: props => `A review can have a maximum of 4 images, but ${props.value.length} were provided.`
-    }
-  }
+      message: (props) =>
+        `A review can have a maximum of 4 images, but ${props.value.length} were provided.`,
+    },
+  },
 });
 //cart
-const Cart = mongoose.model('Cart', {
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+const Cart = mongoose.model("Cart", {
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   products: [
     {
-      product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+      product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
       quantity: Number,
     },
   ],
@@ -283,7 +299,7 @@ const Cart = mongoose.model('Cart', {
   },
 });
 //coupon
-const Coupon = mongoose.model('Coupon', {
+const Coupon = mongoose.model("Coupon", {
   code: {
     type: String,
     required: true,
@@ -307,11 +323,11 @@ const Coupon = mongoose.model('Coupon', {
   },
 });
 //order
-const Order = mongoose.model('Order', {
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+const Order = mongoose.model("Order", {
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   products: [
     {
-      product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+      product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
       variants: {
         size: String,
         color: String,
@@ -327,8 +343,8 @@ const Order = mongoose.model('Order', {
   },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'shipping', 'delivered'],
-    default: 'pending',
+    enum: ["pending", "confirmed", "shipping", "delivered"],
+    default: "pending",
   },
   name: { type: String }, // Thêm dòng này
   email: { type: String }, // Thêm dòng này
@@ -339,7 +355,7 @@ const Order = mongoose.model('Order', {
   },
 
   note: { type: String }, // Thêm dòng này
-  
+
   paymentMethod: {
     type: String,
   },
@@ -349,24 +365,51 @@ const Order = mongoose.model('Order', {
   },
 });
 
-
-
 app.post("/addproduct", async (req, res) => {
-  const { name, category, new_price, old_price, variants, date, available, tags, shortDescription } = req.body;
+  const {
+    name,
+    category,
+    new_price,
+    old_price,
+    variants,
+    date,
+    available,
+    tags,
+    shortDescription,
+  } = req.body;
 
   // Check if all required fields are filled
-  if (!name || !category || !new_price || !old_price || !tags || !shortDescription) {
-    return res.status(400).json({ success: false, message: "All fields are required" });
+  if (
+    !name ||
+    !category ||
+    !new_price ||
+    !old_price ||
+    !tags ||
+    !shortDescription
+  ) {
+    return res
+      .status(400)
+      .json({ success: false, message: "All fields are required" });
   }
 
   // Check if new_price and old_price are numbers
   if (isNaN(new_price) || isNaN(old_price)) {
-    return res.status(400).json({ success: false, message: "New price and old price must be numbers" });
+    return res
+      .status(400)
+      .json({
+        success: false,
+        message: "New price and old price must be numbers",
+      });
   }
 
   // Check if shortDescription is within the character limit
   if (shortDescription.length > 50) {
-    return res.status(400).json({ success: false, message: "Short description must be 50 characters or less" });
+    return res
+      .status(400)
+      .json({
+        success: false,
+        message: "Short description must be 50 characters or less",
+      });
   }
 
   const product = new Product({
@@ -375,9 +418,12 @@ app.post("/addproduct", async (req, res) => {
     category,
     new_price,
     old_price,
-    variants: variants.map(variant => ({
+    variants: variants.map((variant) => ({
       ...variant,
-      image: variant.image instanceof File ? `images/${variant.image.name}` : variant.image
+      image:
+        variant.image instanceof File
+          ? `images/${variant.image.name}`
+          : variant.image,
     })),
     date,
     available,
@@ -390,10 +436,15 @@ app.post("/addproduct", async (req, res) => {
     res.json({ success: true, message: "Product added successfully" });
   } catch (error) {
     console.error("Error adding product:", error);
-    res.status(500).json({ success: false, message: "An error occurred while adding the product" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while adding the product",
+      });
   }
 });
-app.post('/removeproduct', async (req, res) => {
+app.post("/removeproduct", async (req, res) => {
   try {
     const result = await Product.findOneAndDelete({ id: req.body.id });
     if (result) {
@@ -417,14 +468,12 @@ app.post('/removeproduct', async (req, res) => {
   }
 });
 
-app.get('/allproducts', async (req, res) => {
+app.get("/allproducts", async (req, res) => {
   const { page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
 
   try {
-    const products = await Product.find({})
-      .skip(skip)
-      .limit(Number(limit));
+    const products = await Product.find({}).skip(skip).limit(Number(limit));
     const totalProducts = await Product.countDocuments();
 
     res.json({
@@ -434,20 +483,25 @@ app.get('/allproducts', async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching products:", error);
-    res.status(500).json({ success: false, message: "An error occurred while fetching products" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while fetching products",
+      });
   }
 });
 // app.get('/allproducts', async (req, res) => {
 //   const cacheKey = 'all_products';
 
-//   
+//
 //   client.get(cacheKey, async (err, cachedData) => {
 //     if (cachedData) {
-//       
+//
 //       console.log("Fetched from Redis cache");
 //       return res.send(JSON.parse(cachedData));
 //     } else {
-// 
+//
 //       let products = await Product.find({});
 //       console.log("All products fetched from MongoDB");
 
@@ -458,7 +512,6 @@ app.get('/allproducts', async (req, res) => {
 //     }
 //   });
 // });
-
 
 // Schema user model
 // const User = mongoose.model('User', {
@@ -472,7 +525,7 @@ app.get('/allproducts', async (req, res) => {
 //   password: {
 //     type: String,
 //   },
-//   cartData: { 
+//   cartData: {
 //     type: Object,
 //   },
 //   date: {
@@ -485,9 +538,9 @@ app.get('/allproducts', async (req, res) => {
 // app.post('/signup', async (req, res) => {
 //   let check = await User.findOne({ email: req.body.email });
 //   if (check) {
-//     return res.status(400).json({ 
-//       success: false, 
-//       errors: "Existing user found with same email address" 
+//     return res.status(400).json({
+//       success: false,
+//       errors: "Existing user found with same email address"
 //     });
 //   }
 
@@ -499,7 +552,7 @@ app.get('/allproducts', async (req, res) => {
 //   const user = new User({
 //     name: req.body.username,
 //     email: req.body.email,
-//     password: req.body.password, 
+//     password: req.body.password,
 //     cartData: cart,
 //   });
 
@@ -510,13 +563,13 @@ app.get('/allproducts', async (req, res) => {
 //       id: user._id // Use user._id to access the user's ID
 //     }
 //   };
-  
-//   const token = jwt.sign(data, 'secret_ecom'); 
-  
+
+//   const token = jwt.sign(data, 'secret_ecom');
+
 //   res.json({ success: true, token });
 // });
 
-app.post('/signup', async (req, res) => {
+app.post("/signup", async (req, res) => {
   try {
     console.log("Request body:", req.body);
 
@@ -525,16 +578,19 @@ app.post('/signup', async (req, res) => {
       console.log("Existing user found:", existingUser);
       return res.status(400).json({
         success: false,
-        errors: "Existing user found with same email address"
+        errors: "Existing user found with same email address",
       });
     }
 
     let existingUserByPhone = await User.findOne({ phone: req.body.phone });
     if (existingUserByPhone) {
-      console.log("Existing user found with same phone number:", existingUserByPhone);
+      console.log(
+        "Existing user found with same phone number:",
+        existingUserByPhone
+      );
       return res.status(400).json({
         success: false,
-        errors: "Existing user found with same phone number"
+        errors: "Existing user found with same phone number",
       });
     }
 
@@ -545,11 +601,11 @@ app.post('/signup', async (req, res) => {
       phone: req.body.phone,
       address: "None",
       addresses: req.body.addresses || [],
-      role: req.body.role || 'customer',
+      role: req.body.role || "customer",
       LoyaltyPoints: req.body.LoyaltyPoints || 0,
       LoyaltyTicker: req.body.LoyaltyTicker || 0,
       isBanned: req.body.isBanned || false,
-      cartData: req.body.cartData || {}
+      cartData: req.body.cartData || {},
     });
 
     console.log("New user:", user);
@@ -558,12 +614,12 @@ app.post('/signup', async (req, res) => {
 
     const data = {
       user: {
-        id: user._id
-      }
+        id: user._id,
+      },
     };
-    
-    const token = jwt.sign(data, 'secret_ecom'); 
-    
+
+    const token = jwt.sign(data, "secret_ecom");
+
     res.json({ success: true, token });
   } catch (error) {
     console.error("Error during signup:", error);
@@ -572,19 +628,19 @@ app.post('/signup', async (req, res) => {
 });
 
 // Creating endpoint for user login
-app.post('/login', async (req, res) => {
+app.post("/login", async (req, res) => {
   let user = await User.findOne({ email: req.body.email });
 
   if (user) {
-    const passMatch = req.body.password === user.password; 
+    const passMatch = req.body.password === user.password;
     if (passMatch) {
       const data = {
         user: {
-          id: user._id // Use _id to get the user's ID
-        }
+          id: user._id, // Use _id to get the user's ID
+        },
       };
 
-      const token = jwt.sign(data, 'secret_ecom');
+      const token = jwt.sign(data, "secret_ecom");
       res.json({ success: true, token });
     } else {
       res.json({ success: false, errors: "Wrong Password" });
@@ -593,7 +649,7 @@ app.post('/login', async (req, res) => {
     res.json({ success: false, errors: "Wrong Email address" });
   }
 });
-app.get('/newcollections', async (req, res) => {
+app.get("/newcollections", async (req, res) => {
   const { category } = req.query;
   let query = {};
   if (category) {
@@ -603,23 +659,23 @@ app.get('/newcollections', async (req, res) => {
   res.json(products);
 });
 // creating endpoint for latestproducts
-app.get('/newcollections', async (req, res) => {
+app.get("/newcollections", async (req, res) => {
   let products = await Product.find({});
-  let newcollection = products.slice(1).slice(-8); 
+  let newcollection = products.slice(1).slice(-8);
   console.log("Newcollection Fetched");
-  res.send(newcollection); 
+  res.send(newcollection);
 });
 
 // creating endpoint for popular products
-app.get('/popularproducts', async (req, res) => {
+app.get("/popularproducts", async (req, res) => {
   let products = await Product.find({ category: "men" }); // Corrected 'catrgory' to 'category'
-  let popularproducts = products.slice(0, 4); 
+  let popularproducts = products.slice(0, 4);
   console.log("popular products Fetched");
-  res.send(popularproducts); 
+  res.send(popularproducts);
 });
 // Fetch product details
 // Fetch product details
-app.get('/product/:id', async (req, res) => {
+app.get("/product/:id", async (req, res) => {
   try {
     const product = await Product.findOne({ id: req.params.id });
     if (product) {
@@ -629,12 +685,17 @@ app.get('/product/:id', async (req, res) => {
     }
   } catch (error) {
     console.error("Error fetching product:", error);
-    res.status(500).json({ success: false, message: "An error occurred while fetching the product" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while fetching the product",
+      });
   }
 });
 
 // Edit product details
-app.post('/editproduct/:id', async (req, res) => {
+app.post("/editproduct/:id", async (req, res) => {
   try {
     const updatedProduct = await Product.findOneAndUpdate(
       { id: req.params.id },
@@ -648,19 +709,24 @@ app.post('/editproduct/:id', async (req, res) => {
     }
   } catch (error) {
     console.error("Error updating product:", error);
-    res.status(500).json({ success: false, message: "An error occurred while updating the product" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while updating the product",
+      });
   }
 });
 
 // creating middleware to fetch user
 const fetchUser = async (req, res, next) => {
-  const token = req.header('auth-token');
+  const token = req.header("auth-token");
   if (!token) {
     return res.status(401).json({ success: false, message: "Access Denied" });
   }
 
   try {
-    const data = jwt.verify(token, 'secret_ecom');
+    const data = jwt.verify(token, "secret_ecom");
     req.user = data.user;
 
     // Extract email from query parameters and add it to the request body
@@ -674,7 +740,7 @@ const fetchUser = async (req, res, next) => {
   }
 };
 
-app.get('/shipping-addresses', fetchUser, async (req, res) => {
+app.get("/shipping-addresses", fetchUser, async (req, res) => {
   try {
     // Lấy userId từ token
     const userId = req.user.id;
@@ -683,7 +749,9 @@ app.get('/shipping-addresses', fetchUser, async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     // Trả về danh sách địa chỉ giao hàng
@@ -707,7 +775,7 @@ app.get('/shipping-addresses', fetchUser, async (req, res) => {
 //   }
 // });
 
-app.post('/addtocart', fetchUser, async (req, res) => {
+app.post("/addtocart", fetchUser, async (req, res) => {
   const { productId, variant, quantity } = req.body;
   if (!productId || !variant || !quantity) {
     return res.status(400).json({
@@ -731,10 +799,14 @@ app.post('/addtocart', fetchUser, async (req, res) => {
       // Update the quantity directly
       userData.cartData[cartKey] = currentQuantity + newQuantity;
 
-      userData.markModified('cartData');
+      userData.markModified("cartData");
 
       await userData.save();
-      res.json({ success: true, message: "Added to cart", cartData: userData.cartData });
+      res.json({
+        success: true,
+        message: "Added to cart",
+        cartData: userData.cartData,
+      });
     } else {
       res.status(404).json({
         success: false,
@@ -750,7 +822,7 @@ app.post('/addtocart', fetchUser, async (req, res) => {
   }
 });
 
-app.post('/updatecartquantity', fetchUser, async (req, res) => {
+app.post("/updatecartquantity", fetchUser, async (req, res) => {
   const { productId, variant, quantity } = req.body;
   if (!productId || !variant || !quantity) {
     return res.status(400).json({
@@ -769,11 +841,14 @@ app.post('/updatecartquantity', fetchUser, async (req, res) => {
       const cartKey = `${productId}_${variant.size}_${variant.color}`;
       userData.cartData[cartKey] = quantity;
 
-      userData.markModified('cartData');
+      userData.markModified("cartData");
 
-      
       await userData.save();
-      res.json({ success: true, message: "Cart quantity updated", cartData: userData.cartData });
+      res.json({
+        success: true,
+        message: "Cart quantity updated",
+        cartData: userData.cartData,
+      });
     } else {
       res.status(404).json({
         success: false,
@@ -793,16 +868,16 @@ app.post('/updatecartquantity', fetchUser, async (req, res) => {
 // app.post('/removefromcart', fetchUser, async (req, res) => {
 //   console.log("Removed", req.body.itemId);
 
-//   let userData = await User.findOne({ _id: req.user.id 
+//   let userData = await User.findOne({ _id: req.user.id
 //  });
 
 //   if (userData && userData.cartData) { // Check if userData and cartData exist
 //     if (userData.cartData[req.body.itemId] > 0) {
 //       userData.cartData[req.body.itemId] -= 1;
 //       await User.findOneAndUpdate({ _id: req.user.id }, { cartData: userData.cartData });
-//     } 
-//     res.send("Removed"); 
- 
+//     }
+//     res.send("Removed");
+
 //   } else {
 //     // Handle the case where no user or cartData is found
 //     res.status(404).json({ error: 'User or cart data not found' });
@@ -839,10 +914,15 @@ app.post('/updatecartquantity', fetchUser, async (req, res) => {
 //   }
 // });
 
-app.post('/removefromcart', fetchUser, async (req, res) => {
+app.post("/removefromcart", fetchUser, async (req, res) => {
   const { productId, variant, quantity } = req.body;
   if (!productId || !variant || !quantity) {
-    return res.status(400).json({ success: false, message: "Product ID, variant, and quantity are required" });
+    return res
+      .status(400)
+      .json({
+        success: false,
+        message: "Product ID, variant, and quantity are required",
+      });
   }
 
   try {
@@ -854,14 +934,25 @@ app.post('/removefromcart', fetchUser, async (req, res) => {
         if (userData.cartData[cartKey] <= 0) {
           delete userData.cartData[cartKey];
         }
-        userData.markModified('cartData');
+        userData.markModified("cartData");
         await userData.save();
-        res.json({ success: true, message: "Removed from cart", cartData: userData.cartData });
+        res.json({
+          success: true,
+          message: "Removed from cart",
+          cartData: userData.cartData,
+        });
       } else {
-        res.status(400).json({ success: false, message: "Item not in cart or invalid quantity" });
+        res
+          .status(400)
+          .json({
+            success: false,
+            message: "Item not in cart or invalid quantity",
+          });
       }
     } else {
-      res.status(404).json({ success: false, message: "User or cart data not found" });
+      res
+        .status(404)
+        .json({ success: false, message: "User or cart data not found" });
     }
   } catch (error) {
     console.error("Error removing from cart:", error);
@@ -875,20 +966,22 @@ app.post('/removefromcart', fetchUser, async (req, res) => {
 //   let userData = await User.findOne({ _id: req.user.id });
 
 //   if (userData && userData.cartData) { // Check if userData and cartData exist
-//     res.json(userData.cartData); 
+//     res.json(userData.cartData);
 //   } else {
 //     // Handle the case where no user or cartData is found
-//     res.status(404).json({ error: 'User or cart data not found' }); 
+//     res.status(404).json({ error: 'User or cart data not found' });
 //   }
 // });
 
-app.post('/getcart', fetchUser, async (req, res) => {
+app.post("/getcart", fetchUser, async (req, res) => {
   try {
     const userData = await User.findOne({ _id: req.user.id });
     if (userData && userData.cartData) {
       res.json(userData.cartData);
     } else {
-      res.status(404).json({ success: false, message: "User or cart data not found" });
+      res
+        .status(404)
+        .json({ success: false, message: "User or cart data not found" });
     }
   } catch (error) {
     console.error("Error fetching cart:", error);
@@ -897,17 +990,22 @@ app.post('/getcart', fetchUser, async (req, res) => {
 });
 
 // Fetch all users
-app.get('/allusers', async (req, res) => {
+app.get("/allusers", async (req, res) => {
   try {
     const users = await User.find({});
     res.json(users);
   } catch (error) {
     console.error("Error fetching users:", error);
-    res.status(500).json({ success: false, message: "An error occurred while fetching users" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while fetching users",
+      });
   }
 });
 // Remove user
-app.post('/removeuser', async (req, res) => {
+app.post("/removeuser", async (req, res) => {
   try {
     const result = await User.findOneAndDelete({ _id: req.body.id });
     if (result) {
@@ -917,12 +1015,17 @@ app.post('/removeuser', async (req, res) => {
     }
   } catch (error) {
     console.error("Error removing user:", error);
-    res.status(500).json({ success: false, message: "An error occurred while removing the user" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while removing the user",
+      });
   }
 });
 
 // Fetch user details
-app.get('/user/:id', async (req, res) => {
+app.get("/user/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (user) {
@@ -932,18 +1035,22 @@ app.get('/user/:id', async (req, res) => {
     }
   } catch (error) {
     console.error("Error fetching user:", error);
-    res.status(500).json({ success: false, message: "An error occurred while fetching the user" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while fetching the user",
+      });
   }
 });
 
 // Edit user details
-app.post('/edituser/:id', async (req, res) => {
+app.post("/edituser/:id", async (req, res) => {
   try {
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
     if (updatedUser) {
       res.json({ success: true, message: "User updated successfully" });
     } else {
@@ -952,22 +1059,60 @@ app.post('/edituser/:id', async (req, res) => {
   } catch (error) {
     if (error.code === 11000) {
       const field = Object.keys(error.keyPattern)[0];
-      res.status(400).json({ success: false, message: `${field.charAt(0).toUpperCase() + field.slice(1)} already exists` });
+      res
+        .status(400)
+        .json({
+          success: false,
+          message: `${
+            field.charAt(0).toUpperCase() + field.slice(1)
+          } already exists`,
+        });
     } else {
       console.error("Error updating user:", error);
-      res.status(500).json({ success: false, message: "An error occurred while updating the user" });
+      res
+        .status(500)
+        .json({
+          success: false,
+          message: "An error occurred while updating the user",
+        });
     }
   }
 });
 
-app.post('/addorder', fetchUser, async (req, res) => {
+app.post("/addorder", fetchUser, async (req, res) => {
   try {
-    const { products, total, shippingAddress, paymentMethod, name, phone, email, note, LoyaltyPoints} = req.body;
+    const {
+      products,
+      total,
+      shippingAddress,
+      paymentMethod,
+      name,
+      phone,
+      email,
+      note,
+      LoyaltyPoints,
+    } = req.body;
 
-    let user = await User.findById(req.user.id);
+    let user;
+    if (req.user) {
+      user = await User.findById(req.user.id);
+    }
 
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      user = new User({
+        name,
+        email,
+        password: Math.random().toString(36).slice(-8), // Generate a random password
+        phone,
+        address: shippingAddress.address,
+        addresses: req.body.addresses || [],
+        role: req.body.role || 'customer',
+        LoyaltyPoints: req.body.LoyaltyPoints || 0,
+        LoyaltyTicker: req.body.LoyaltyTicker || 0,
+        isBanned: req.body.isBanned || false,
+        cartData: req.body.cartData || {}
+      });
+      await user.save();
     }
 
     // Calculate loyalty points earned (5% of the total order value)
@@ -978,7 +1123,7 @@ app.post('/addorder', fetchUser, async (req, res) => {
 
     const order = new Order({
       user: user._id,
-      products: products.map(product => ({
+      products: products.map((product) => ({
         product: product.product,
         variants: product.variants,
         quantity: product.quantity,
@@ -1001,18 +1146,21 @@ app.post('/addorder', fetchUser, async (req, res) => {
 
     // Add loyalty points to user's balance
     user.LoyaltyPoints += loyaltyPointsEarned;
-    user.markModified('LoyaltyPoints');
+    user.markModified("LoyaltyPoints");
     await user.save();
 
     res.json({ success: true, message: "Order placed successfully", order });
   } catch (error) {
     console.error("Error placing order:", error);
-    res.status(500).json({ success: false, message: "An error occurred while placing the order" });
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while placing the order",
+    });
   }
 });
 
-app.get('/allorders', async (req, res) => {
-  const { page = 1, limit = 20, sort = 'desc', startDate, endDate } = req.query;
+app.get("/allorders", async (req, res) => {
+  const { page = 1, limit = 20, sort = "desc", startDate, endDate } = req.query;
   const skip = (page - 1) * limit;
   const query = {};
 
@@ -1022,8 +1170,8 @@ app.get('/allorders', async (req, res) => {
 
   try {
     const orders = await Order.find(query)
-      .populate('user', 'name')
-      .sort({ date: sort === 'desc' ? -1 : 1 })
+      .populate("user", "name")
+      .sort({ date: sort === "desc" ? -1 : 1 })
       .skip(skip)
       .limit(Number(limit));
 
@@ -1037,31 +1185,49 @@ app.get('/allorders', async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching orders:", error);
-    res.status(500).json({ success: false, message: "An error occurred while fetching orders" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while fetching orders",
+      });
   }
 });
-app.post('/updateorderstatus/:id', async (req, res) => {
+app.post("/updateorderstatus/:id", async (req, res) => {
   try {
     const { status } = req.body;
-    const updatedOrder = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    const updatedOrder = await Order.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
 
     if (updatedOrder) {
-      res.json({ success: true, message: "Order status updated successfully", order: updatedOrder });
+      res.json({
+        success: true,
+        message: "Order status updated successfully",
+        order: updatedOrder,
+      });
     } else {
       res.status(404).json({ success: false, message: "Order not found" });
     }
   } catch (error) {
     console.error("Error updating order status:", error);
-    res.status(500).json({ success: false, message: "An error occurred while updating the order status" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while updating the order status",
+      });
   }
 });
 
-app.post('/clearcart', fetchUser, async (req, res) => {
+app.post("/clearcart", fetchUser, async (req, res) => {
   try {
     const userData = await User.findById(req.user.id);
     if (userData) {
       userData.cartData = {}; // Clear cart data
-      userData.markModified('cartData');
+      userData.markModified("cartData");
       await userData.save();
       res.json({ success: true, message: "Cart cleared successfully" });
     } else {
@@ -1073,13 +1239,15 @@ app.post('/clearcart', fetchUser, async (req, res) => {
   }
 });
 
-app.get('/myorders', fetchUser, async (req, res) => {
+app.get("/myorders", fetchUser, async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user.id });
     if (orders.length > 0) {
       res.json({ success: true, orders });
     } else {
-      res.status(404).json({ success: false, message: "No orders found for this user" });
+      res
+        .status(404)
+        .json({ success: false, message: "No orders found for this user" });
     }
   } catch (error) {
     console.error("Error fetching user orders:", error);
@@ -1087,9 +1255,9 @@ app.get('/myorders', fetchUser, async (req, res) => {
   }
 });
 
-app.get('/order/:id', async (req, res) => {
+app.get("/order/:id", async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate('user', 'name');
+    const order = await Order.findById(req.params.id).populate("user", "name");
     if (order) {
       res.json({ success: true, order });
     } else {
@@ -1097,14 +1265,21 @@ app.get('/order/:id', async (req, res) => {
     }
   } catch (error) {
     console.error("Error fetching order:", error);
-    res.status(500).json({ success: false, message: "An error occurred while fetching the order" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while fetching the order",
+      });
   }
 });
-app.get('/getorderdetails', fetchUser, async (req, res) => {
+app.get("/getorderdetails", fetchUser, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     const orderDetails = {
@@ -1116,63 +1291,122 @@ app.get('/getorderdetails', fetchUser, async (req, res) => {
     res.json({ success: true, ...orderDetails });
   } catch (error) {
     console.error("Error fetching order details:", error);
-    res.status(500).json({ success: false, message: "An error occurred while fetching order details" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while fetching order details",
+      });
   }
 });
 
 app.listen(port, (error) => {
   if (!error) {
     console.log("Server is running on port " + port);
-    
   }
 });
 
-app.post('/applycoupon', async (req, res) => {
+app.post("/applycoupon", async (req, res) => {
   const { code } = req.body;
 
   try {
     const coupon = await Coupons.findOne({ code });
-
-    if (!coupon) {
-      return res.status(404).json({ success: false, message: "Coupon not found" });
+    if (!coupon.used) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Voucher is no longer available" });
     }
 
     const currentDate = new Date();
     if (currentDate > coupon.expirationDate) {
-      return res.status(400).json({ success: false, message: "Coupon has expired" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Coupon has expired" });
     }
 
-    if (coupon.used) {
-      return res.status(400).json({ success: false, message: "Coupon has already been used" });
+    if (coupon) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Coupon not found" });
     }
 
     // coupon.used = true;
     // coupon.markModified('used');
     // await coupon.save();
 
-    res.json({ success: true, message: "Coupon is valid", discount: coupon.discount });
+    res.json({
+      success: true,
+      message: "Coupon is valid",
+      discount: coupon.discount,
+    });
   } catch (error) {
     console.error("Error applying coupon:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
 
+app.get("/coupon/:id", async (req, res) => {
+  try {
+    const coupon = await Coupon.findById(req.params.id);
+    if (coupon) {
+      res.json(coupon);
+    } else {
+      res.status(404).json({ success: false, message: "Coupon not found" });
+    }
+  } catch (error) {
+    console.error("Error fetching coupon:", error);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while fetching the coupon",
+      });
+  }
+});
+
+app.post("/editcoupon/:id", async (req, res) => {
+  try {
+    const updatedCoupon = await Coupon.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (updatedCoupon) {
+      res.json({
+        success: true,
+        message: "Coupon updated successfully",
+        coupon: updatedCoupon,
+      });
+    } else {
+      res.status(404).json({ success: false, message: "Coupon not found" });
+    }
+  } catch (error) {
+    console.error("Error updating coupon:", error);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while updating the coupon",
+      });
+  }
+});
+
 // Fetch user profile
-app.get('/profile', fetchUser, async (req, res) => {
+app.get("/profile", fetchUser, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
     res.json(user);
   } catch (error) {
-    console.error('Error fetching profile:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error fetching profile:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
 // Update user profile
-app.put('/profile', fetchUser, async (req, res) => {
+app.put("/profile", fetchUser, async (req, res) => {
   try {
     const { name, email, phone, address, password } = req.body;
     const updateData = { name, email, phone, address };
@@ -1181,61 +1415,80 @@ app.put('/profile', fetchUser, async (req, res) => {
       updateData.password = password; // Cập nhật mật khẩu mà không hash
     }
 
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      updateData,
-      { new: true }
-    );
+    const user = await User.findByIdAndUpdate(req.user.id, updateData, {
+      new: true,
+    });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     res.json(user);
   } catch (error) {
-    console.error('Error updating profile:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error updating profile:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
 // Delete user account
-app.delete('/profile', fetchUser, async (req, res) => {
+app.delete("/profile", fetchUser, async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.user.id);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
-    res.json({ message: 'Account deleted successfully' });
+    res.json({ message: "Account deleted successfully" });
   } catch (error) {
-    console.error('Error deleting account:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error deleting account:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
-app.get('/dashboard-data', async (req, res) => {
+app.get("/dashboard-data", async (req, res) => {
   try {
     const totalProducts = await Product.countDocuments();
     const totalUsers = await User.countDocuments();
-    const newUsers = await User.countDocuments({ date: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)) } });
+    const newUsers = await User.countDocuments({
+      date: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)) },
+    });
     const totalOrders = await Order.countDocuments();
     const bestSellingProducts = await Order.aggregate([
       { $unwind: "$products" },
-      { $group: { _id: "$products.product", totalSold: { $sum: "$products.quantity" } } },
+      {
+        $group: {
+          _id: "$products.product",
+          totalSold: { $sum: "$products.quantity" },
+        },
+      },
       { $sort: { totalSold: -1 } },
       { $limit: 5 },
-      { $lookup: { from: "products", localField: "_id", foreignField: "_id", as: "product" } },
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "_id",
+          as: "product",
+        },
+      },
       { $unwind: "$product" },
-      { $project: { _id: 1, totalSold: 1, name: "$product.name", image: "$product.image" } }
+      {
+        $project: {
+          _id: 1,
+          totalSold: 1,
+          name: "$product.name",
+          image: "$product.image",
+        },
+      },
     ]);
 
     const productData = await Product.aggregate([
       {
         $group: {
           _id: { year: { $year: "$date" }, month: { $month: "$date" } },
-          count: { $sum: 1 }
-        }
+          count: { $sum: 1 },
+        },
       },
-      { $sort: { "_id.year": 1, "_id.month": 1 } }
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
     ]);
 
     res.json({
@@ -1244,15 +1497,20 @@ app.get('/dashboard-data', async (req, res) => {
       newUsers,
       totalOrders,
       bestSellingProducts,
-      productData
+      productData,
     });
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
-    res.status(500).json({ success: false, message: "An error occurred while fetching dashboard data" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while fetching dashboard data",
+      });
   }
 });
 
-const Coupons = mongoose.model('Coupons', {
+const Coupons = mongoose.model("Coupons", {
   code: {
     type: String,
     required: true,
@@ -1276,17 +1534,17 @@ const Coupons = mongoose.model('Coupons', {
   },
 });
 
-app.get('/allcoupons', async (req, res) => {
+app.get("/allcoupons", async (req, res) => {
   const coupons = await Coupons.find({});
   res.json(coupons);
 });
 
-app.get('/allcoupons', async (req, res) => {
+app.get("/allcoupons", async (req, res) => {
   const coupons = await Coupons.find({});
   res.json(coupons);
 });
 
-app.post('/removecoupon', async (req, res) => {
+app.post("/removecoupon", async (req, res) => {
   await Coupons.findOneAndDelete({ _id: req.body.id });
   console.log("Removed");
 
@@ -1294,7 +1552,7 @@ app.post('/removecoupon', async (req, res) => {
     success: true,
   });
 });
-app.get('/newcollections', async (req, res) => {
+app.get("/newcollections", async (req, res) => {
   const { category } = req.query;
   let query = {};
   if (category) {
@@ -1303,7 +1561,7 @@ app.get('/newcollections', async (req, res) => {
   let products = await Product.find(query).sort({ date: -1 }).limit(8);
   res.json(products);
 });
-app.post('/addcoupon', async (req, res) => {
+app.post("/addcoupon", async (req, res) => {
   const { code, discount, expirationDate } = req.body;
 
   try {
@@ -1317,10 +1575,15 @@ app.post('/addcoupon', async (req, res) => {
     res.json({ success: true, message: "Coupon added successfully" });
   } catch (error) {
     console.error("Error adding coupon:", error);
-    res.status(500).json({ success: false, message: "An error occurred while adding the coupon" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while adding the coupon",
+      });
   }
 });
-app.get('/revenue', async (req, res) => {
+app.get("/revenue", async (req, res) => {
   const { year } = req.query;
   const startDate = new Date(year, 0, 1);
   const endDate = new Date(year, 11, 31);
@@ -1351,49 +1614,68 @@ app.get('/revenue', async (req, res) => {
     res.json(revenueData);
   } catch (error) {
     console.error("Error fetching revenue data:", error);
-    res.status(500).json({ success: false, message: "An error occurred while fetching revenue data" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while fetching revenue data",
+      });
   }
 });
 
-app.post('/add-address', fetchUser, async (req, res) => {
+app.post("/add-address", fetchUser, async (req, res) => {
   try {
     const { name, contact, address } = req.body;
 
     if (!name || !contact || !address) {
-      return res.status(400).json({ success: false, message: "All fields are required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
     }
 
     // Tìm người dùng theo userId
     const user = await User.findById(req.user.id);
 
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     // Thêm địa chỉ mới vào danh sách địa chỉ của người dùng
     user.addresses.push({ name, contact, address });
     await user.save();
 
-    res.json({ success: true, message: "Address added successfully", addresses: user.addresses });
+    res.json({
+      success: true,
+      message: "Address added successfully",
+      addresses: user.addresses,
+    });
   } catch (error) {
     console.error("Error adding address:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
 
-app.delete('/delete-address/:index', fetchUser, async (req, res) => {
+app.delete("/delete-address/:index", fetchUser, async (req, res) => {
   try {
     const { index } = req.params;
     const user = await User.findById(req.user.id);
 
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     if (user.addresses[index]) {
       user.addresses.splice(index, 1);
       await user.save();
-      res.json({ success: true, message: "Address deleted successfully", addresses: user.addresses });
+      res.json({
+        success: true,
+        message: "Address deleted successfully",
+        addresses: user.addresses,
+      });
     } else {
       res.status(404).json({ success: false, message: "Address not found" });
     }
@@ -1403,7 +1685,7 @@ app.delete('/delete-address/:index', fetchUser, async (req, res) => {
   }
 });
 
-app.put('/update-address/:index', fetchUser, async (req, res) => {
+app.put("/update-address/:index", fetchUser, async (req, res) => {
   try {
     const { index } = req.params;
     const { name, contact, address } = req.body;
@@ -1412,14 +1694,20 @@ app.put('/update-address/:index', fetchUser, async (req, res) => {
     const user = await User.findById(req.user.id);
 
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     // Cập nhật địa chỉ tại vị trí index
     if (user.addresses[index]) {
       user.addresses[index] = { name, contact, address };
       await user.save();
-      res.json({ success: true, message: "Address updated successfully", addresses: user.addresses });
+      res.json({
+        success: true,
+        message: "Address updated successfully",
+        addresses: user.addresses,
+      });
     } else {
       res.status(404).json({ success: false, message: "Address not found" });
     }
@@ -1429,7 +1717,7 @@ app.put('/update-address/:index', fetchUser, async (req, res) => {
   }
 });
 
-app.get('/order-stats', async (req, res) => {
+app.get("/order-stats", async (req, res) => {
   const { year } = req.query;
   const startDate = new Date(year, 0, 1);
   const endDate = new Date(year, 11, 31);
@@ -1460,37 +1748,56 @@ app.get('/order-stats', async (req, res) => {
     res.json(orderData);
   } catch (error) {
     console.error("Error fetching order data:", error);
-    res.status(500).json({ success: false, message: "An error occurred while fetching order data" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while fetching order data",
+      });
   }
 });
-app.get('/reviews/:productId', async (req, res) => {
+app.get("/reviews/:productId", async (req, res) => {
   try {
-    const reviews = await Review.find({ product: req.params.productId }).populate('user', 'name');
+    const reviews = await Review.find({
+      product: req.params.productId,
+    }).populate("user", "name");
     res.json({ success: true, reviews });
   } catch (error) {
     console.error("Error fetching reviews:", error);
-    res.status(500).json({ success: false, message: "An error occurred while fetching reviews" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while fetching reviews",
+      });
   }
 });
-app.get('/products', async (req, res) => {
-  const { page = 1, limit = 10, search = '', category = '', tags = '', sort = '' } = req.query;
+app.get("/products", async (req, res) => {
+  const {
+    page = 1,
+    limit = 10,
+    search = "",
+    category = "",
+    tags = "",
+    sort = "",
+  } = req.query;
   const skip = (page - 1) * limit;
   let query = {};
 
   if (search) {
-    query.name = { $regex: search, $options: 'i' };
+    query.name = { $regex: search, $options: "i" };
   }
   if (category) {
     query.category = category;
   }
   if (tags) {
-    query.tags = { $in: tags.split(',') };
+    query.tags = { $in: tags.split(",") };
   }
 
   let sortOption = {};
-  if (sort === 'price-asc') {
+  if (sort === "price-asc") {
     sortOption.new_price = 1;
-  } else if (sort === 'price-desc') {
+  } else if (sort === "price-desc") {
     sortOption.new_price = -1;
   }
 
@@ -1508,37 +1815,51 @@ app.get('/products', async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching products:", error);
-    res.status(500).json({ success: false, message: "An error occurred while fetching products" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while fetching products",
+      });
   }
 });
-app.get('/categories', async (req, res) => {
+app.get("/categories", async (req, res) => {
   try {
-    const categories = await Product.distinct('category');
+    const categories = await Product.distinct("category");
     res.json(categories);
   } catch (error) {
     console.error("Error fetching categories:", error);
-    res.status(500).json({ success: false, message: "An error occurred while fetching categories" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while fetching categories",
+      });
   }
 });
 
-app.get('/tags', async (req, res) => {
+app.get("/tags", async (req, res) => {
   try {
-    const tags = await Product.distinct('tags');
+    const tags = await Product.distinct("tags");
     res.json(tags);
   } catch (error) {
     console.error("Error fetching tags:", error);
-    res.status(500).json({ success: false, message: "An error occurred while fetching tags" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while fetching tags",
+      });
   }
 });
-const nodemailer = require('nodemailer');
-const crypto = require('crypto');
-
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 
 const transporter = nodemailer.createTransport({
-  service: 'Gmail',
+  service: "Gmail",
   auth: {
-    user: 'trungductwice@gmail.com',
-    pass: 'amut nfcl iguf hohn', // Use the generated app password here
+    user: "trungductwice@gmail.com",
+    pass: "amut nfcl iguf hohn", // Use the generated app password here
   },
 });
 
@@ -1593,7 +1914,9 @@ const sendOrderConfirmationEmail = (order) => {
         <th>Quantity</th>
         <th>Price</th>
       </tr>
-      ${order.products.map(product => `
+      ${order.products
+        .map(
+          (product) => `
         <tr>
           <td>${product.name}</td>
           <td>${product.variants.size}</td>
@@ -1601,22 +1924,24 @@ const sendOrderConfirmationEmail = (order) => {
           <td>${product.quantity}</td>
           <td>${product.price}</td>
         </tr>
-      `).join('')}
+      `
+        )
+        .join("")}
     </table>
   `;
 
   const mailOptions = {
-    from: 'trungductwice@gmail.com',
+    from: "trungductwice@gmail.com",
     to: order.email,
-    subject: 'Order Confirmation',
+    subject: "Order Confirmation",
     html: orderDetailsTable,
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.error('Error sending email:', error);
+      console.error("Error sending email:", error);
     } else {
-      console.log('Email sent:', info.response);
+      console.log("Email sent:", info.response);
     }
   });
 };
@@ -1653,27 +1978,31 @@ const sendOrderConfirmationEmail = (order) => {
 //   }
 // });
 
-app.post('/forgotpassword', async (req, res) => {
+app.post("/forgotpassword", async (req, res) => {
   const { email } = req.body;
   if (!email) {
-    return res.status(400).json({ success: false, message: "Email is required" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Email is required" });
   }
 
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
-    const otp = crypto.randomBytes(6).toString('hex').toUpperCase();
+    const otp = crypto.randomBytes(6).toString("hex").toUpperCase();
     user.password = otp; // Lưu OTP làm mật khẩu mới
     await user.save();
 
     // Send the New Password to the user's email
     const mailOptions = {
       to: user.email,
-      from: 'trungductwice@gmail.com',
-      subject: 'Password Reset from Shopping cart',
+      from: "trungductwice@gmail.com",
+      subject: "Password Reset from Shopping cart",
       text: `Your new Password is: ${otp}\n\n\n`,
     };
 
@@ -1682,18 +2011,27 @@ app.post('/forgotpassword', async (req, res) => {
     res.json({ success: true, message: "New password created successfully" });
   } catch (error) {
     console.error("Error sending OTP email:", error);
-    res.status(500).json({ success: false, message: "An error occurred while sending email" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while sending email",
+      });
   }
 });
 
-app.post('/updateprofile', async (req, res) => {
+app.post("/updateprofile", async (req, res) => {
   try {
-    const token = req.header('auth-token');
-    if (!token) return res.status(401).json({ success: false, message: "Access Denied" });
+    const token = req.header("auth-token");
+    if (!token)
+      return res.status(401).json({ success: false, message: "Access Denied" });
 
-    const verified = jwt.verify(token, 'secret_ecom');
+    const verified = jwt.verify(token, "secret_ecom");
     const user = await User.findById(verified.user.id);
-    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    if (!user)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
 
     const { name, email, phone, address } = req.body;
     user.name = name;
@@ -1701,11 +2039,16 @@ app.post('/updateprofile', async (req, res) => {
     user.phone = phone;
     user.address = address;
     await user.save();
-    
+
     res.json({ success: true, message: "Profile updated successfully" });
   } catch (error) {
     console.error("Error updating profile:", error);
-    res.status(500).json({ success: false, message: "An error occurred while updating the profile" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while updating the profile",
+      });
   }
 });
 // Add a review
@@ -1736,7 +2079,7 @@ app.post('/updateprofile', async (req, res) => {
 //   }
 // });
 
-app.post('/addreview', fetchUser, async (req, res) => {
+app.post("/addreview", fetchUser, async (req, res) => {
   const { orderId, product, review, rating } = req.body;
 
   try {
@@ -1752,11 +2095,16 @@ app.post('/addreview', fetchUser, async (req, res) => {
     res.json({ success: true, message: "Review added successfully" });
   } catch (error) {
     console.error("Error adding review:", error);
-    res.status(500).json({ success: false, message: "An error occurred while adding the review" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while adding the review",
+      });
   }
 });
 
-app.put('/editreview/:id', fetchUser, async (req, res) => {
+app.put("/editreview/:id", fetchUser, async (req, res) => {
   const { review, rating } = req.body;
 
   try {
@@ -1773,13 +2121,21 @@ app.put('/editreview/:id', fetchUser, async (req, res) => {
     }
   } catch (error) {
     console.error("Error updating review:", error);
-    res.status(500).json({ success: false, message: "An error occurred while updating the review" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while updating the review",
+      });
   }
 });
 
-app.get('/getreviews/:orderId', fetchUser, async (req, res) => {
+app.get("/getreviews/:orderId", fetchUser, async (req, res) => {
   try {
-    const reviews = await Review.find({ order: req.params.orderId }).populate('user', 'name');
+    const reviews = await Review.find({ order: req.params.orderId }).populate(
+      "user",
+      "name"
+    );
     if (reviews.length > 0) {
       res.json({ success: true, reviews });
     } else {
@@ -1787,7 +2143,12 @@ app.get('/getreviews/:orderId', fetchUser, async (req, res) => {
     }
   } catch (error) {
     console.error("Error fetching reviews:", error);
-    res.status(500).json({ success: false, message: "An error occurred while fetching reviews" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while fetching reviews",
+      });
   }
 });
 // app.post('/verifyotp', async (req, res) => {
@@ -1808,23 +2169,32 @@ app.get('/getreviews/:orderId', fetchUser, async (req, res) => {
 //     res.status(500).json({ success: false, message: "An error occurred while verifying the OTP" });
 //   }
 // });
-app.post('/updatepassword', async (req, res) => {
+app.post("/updatepassword", async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   const userId = req.user.id; // Assuming you have user ID from authentication middleware
 
   if (!oldPassword || !newPassword) {
-    return res.status(400).json({ success: false, message: "Old password and new password are required" });
+    return res
+      .status(400)
+      .json({
+        success: false,
+        message: "Old password and new password are required",
+      });
   }
 
   try {
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
-      return res.status(400).json({ success: false, message: "Old password is incorrect" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Old password is incorrect" });
     }
 
     user.password = newPassword; // Ensure you hash the password before saving
@@ -1833,51 +2203,80 @@ app.post('/updatepassword', async (req, res) => {
     res.json({ success: true, message: "Password updated successfully" });
   } catch (error) {
     console.error("Error updating password:", error);
-    res.status(500).json({ success: false, message: "An error occurred while updating the password" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while updating the password",
+      });
   }
 });
-app.post('/subscribe', async (req, res) => {
+app.post("/subscribe", async (req, res) => {
   const { email } = req.body;
   if (!email) {
-    return res.status(400).json({ success: false, message: "Email is required" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Email is required" });
   }
 
   const mailOptions = {
     to: email,
-    from: 'trungductwice@gmail.com',
-    subject: 'Subscription Successful',
-    text: 'You have successfully subscribed to our newsletter!',
+    from: "trungductwice@gmail.com",
+    subject: "Subscription Successful",
+    text: "You have successfully subscribed to our newsletter!",
   };
 
   try {
     await transporter.sendMail(mailOptions);
-    res.json({ success: true, message: "Subscription email sent successfully" });
+    res.json({
+      success: true,
+      message: "Subscription email sent successfully",
+    });
   } catch (error) {
     console.error("Error sending subscription email:", error);
-    res.status(500).json({ success: false, message: "An error occurred while sending the subscription email" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while sending the subscription email",
+      });
   }
 });
-app.post('/resetpassword/:id', async (req, res) => {
+app.post("/resetpassword/:id", async (req, res) => {
   const { id } = req.params;
   const { oldPassword, newPassword } = req.body;
 
   if (!oldPassword || !newPassword) {
-    return res.status(400).json({ success: false, message: "Old password and new password are required" });
+    return res
+      .status(400)
+      .json({
+        success: false,
+        message: "Old password and new password are required",
+      });
   }
 
   try {
     const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
-      return res.status(400).json({ success: false, message: "Old password is incorrect" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Old password is incorrect" });
     }
 
     if (oldPassword === newPassword) {
-      return res.status(400).json({ success: false, message: "New password cannot be the same as the old password" });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "New password cannot be the same as the old password",
+        });
     }
 
     user.password = await bcrypt.hash(newPassword, 10); // Hash the new password before saving
@@ -1886,15 +2285,20 @@ app.post('/resetpassword/:id', async (req, res) => {
     res.json({ success: true, message: "Password updated successfully" });
   } catch (error) {
     console.error("Error updating password:", error);
-    res.status(500).json({ success: false, message: "An error occurred while updating the password" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while updating the password",
+      });
   }
 });
-app.post('/verify-password', (req, res) => {
+app.post("/verify-password", (req, res) => {
   const { oldPassword } = req.body;
-  const token = req.headers['auth-token'];
+  const token = req.headers["auth-token"];
 
   // Verify the token and get the user
-  const user = jwt.verify(token, 'your_jwt_secret');
+  const user = jwt.verify(token, "your_jwt_secret");
 
   // Check if the old password matches the user's current password
   if (user.password === oldPassword) {
@@ -1904,24 +2308,38 @@ app.post('/verify-password', (req, res) => {
   }
 });
 // Example endpoint in your backend
-app.get('/top-buyers', async (req, res) => {
+app.get("/top-buyers", async (req, res) => {
   try {
     const topBuyers = await Order.aggregate([
-      { $unwind: '$products' },
-      { $group: { _id: '$user', purchaseCount: { $sum: '$products.quantity' } } },
+      { $unwind: "$products" },
+      {
+        $group: { _id: "$user", purchaseCount: { $sum: "$products.quantity" } },
+      },
       { $sort: { purchaseCount: -1 } },
       { $limit: 3 },
-      { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'userDetails' } },
-      { $unwind: '$userDetails' },
-      { $project: { _id: 1, purchaseCount: 1, name: '$userDetails.name' } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      { $unwind: "$userDetails" },
+      { $project: { _id: 1, purchaseCount: 1, name: "$userDetails.name" } },
     ]);
     res.json(topBuyers);
   } catch (error) {
-    console.error('Error fetching top buyers:', error);
-    res.status(500).json({ success: false, message: 'An error occurred while fetching top buyers' });
+    console.error("Error fetching top buyers:", error);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occurred while fetching top buyers",
+      });
   }
 });
-app.post('/updateproductquantity', async (req, res) => {
+app.post("/updateproductquantity", async (req, res) => {
   const { productId, size, color, quantity } = req.body;
 
   if (!productId || !size || !color || !quantity) {

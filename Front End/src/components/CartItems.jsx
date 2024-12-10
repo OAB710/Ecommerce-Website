@@ -36,6 +36,11 @@ const CartItems = () => {
   const [paymentMethod, setPaymentMethod] = useState("COD");
 
   useEffect(() => {
+    const authToken = localStorage.getItem("auth-token");
+  if (!authToken) {
+    navigate("/login");
+    return;
+  }
     if (location.state) {
       setOrderDetails({
         name: location.state.name,
@@ -155,10 +160,13 @@ const CartItems = () => {
       },
       body: JSON.stringify(orderData),
     });
+    
 
     const data = await response.json();
     if (data.success) {
       alert("Order placed successfully!");
+      
+     
 
       // Clear cart items in database
       await fetch("http://localhost:4000/clearcart", {
