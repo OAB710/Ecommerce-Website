@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { ShopContext } from "../Context/ShopContext";
 import { MdStar } from "react-icons/md";
 import Review from "../components/Review"; // Ensure Review component is imported
+import {useNavigate} from 'react-router-dom';
 
 const Product = () => {
   const { productId } = useParams();
@@ -13,6 +14,7 @@ const Product = () => {
   const [quantity, setQuantity] = useState(1);
   const [mainImage, setMainImage] = useState("");
   const [remainingQuantity, setRemainingQuantity] = useState(null);
+  const navigate = useNavigate();
 
   const formatPrice = (price) => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "đ";
@@ -54,6 +56,16 @@ const Product = () => {
     if (selectedColor && selectedSize) {
       const variant = { size: selectedSize, color: selectedColor };
       addToCart(product.id, variant, quantity);
+    } else {
+      alert("Please select color and size.");
+    }
+  };
+
+  const buyitnow = () => {
+    if (selectedColor && selectedSize) {
+      const variant = { size: selectedSize, color: selectedColor };
+      addToCart(product.id, variant, quantity);
+      navigate('/cart-page');
     } else {
       alert("Please select color and size.");
     }
@@ -186,6 +198,7 @@ const Product = () => {
                 Add to cart
               </button>
               <button
+                onClick={buyitnow}
                 className="btn_dark_rounded !rounded-none uppercase regular-14 tracking-widest"
                 disabled={remainingQuantity === 0 || remainingQuantity === null}
               >

@@ -962,7 +962,8 @@ app.post('/edituser/:id', async (req, res) => {
 
 app.post('/addorder', fetchUser, async (req, res) => {
   try {
-    const { products, total, shippingAddress, paymentMethod, name, phone, email, note, LoyaltyPoints } = req.body;
+    const { products, total, shippingAddress, paymentMethod, name, phone, email, note, LoyaltyPoints} = req.body;
+
     let user = await User.findById(req.user.id);
 
     if (!user) {
@@ -995,22 +996,6 @@ app.post('/addorder', fetchUser, async (req, res) => {
 
     // Save the order
     await order.save();
-
-    // Update product quantities
-    for (const product of products) {
-      const dbProduct = await Product.findById(product.product);
-      if (dbProduct) {
-        const variant = dbProduct.variants.find(v => v.size === product.variants.size && v.color === product.variants.color);
-        if (variant) {
-          variant.quantity -= product.quantity;
-          if (variant.quantity < 0) {
-            variant.quantity = 0; // Ensure quantity doesn't go below 0
-          }
-        }
-        dbProduct.markModified('variants');
-        await dbProduct.save();
-      }
-    }
 
     //sendOrderConfirmationEmail(order);
 
@@ -1160,6 +1145,10 @@ app.post('/applycoupon', async (req, res) => {
     if (coupon.used) {
       return res.status(400).json({ success: false, message: "Coupon has already been used" });
     }
+
+    // coupon.used = true;
+    // coupon.markModified('used');
+    // await coupon.save();
 
     res.json({ success: true, message: "Coupon is valid", discount: coupon.discount });
   } catch (error) {

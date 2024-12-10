@@ -21,6 +21,7 @@ const CartItems = () => {
     user,
   } = useContext(ShopContext);
 
+  const [shippingOption, setShippingOption] = useState("Standard");
   const [couponCode, setCouponCode] = useState("");
   const [pointsDiscount, setPointsDiscount] = useState(0);
   const [points, setPoints] = useState("");
@@ -144,7 +145,7 @@ const CartItems = () => {
       note: orderDetails.note, // Add note field
       LoyaltyPoints: pointsDiscount / 1000, // Assuming 1 point = 1000 currency units
     };
-  
+
     const response = await fetch("http://localhost:4000/addorder", {
       method: "POST",
       headers: {
@@ -154,11 +155,11 @@ const CartItems = () => {
       },
       body: JSON.stringify(orderData),
     });
-  
+
     const data = await response.json();
     if (data.success) {
       alert("Order placed successfully!");
-  
+
       // Clear cart items in database
       await fetch("http://localhost:4000/clearcart", {
         method: "POST",
@@ -167,7 +168,7 @@ const CartItems = () => {
           "auth-token": localStorage.getItem("auth-token"),
         },
       });
-  
+
       // Update product quantities
       for (const product of orderData.products) {
         await fetch(`http://localhost:4000/updateproductquantity`, {
@@ -185,7 +186,7 @@ const CartItems = () => {
           }),
         });
       }
-  
+
       window.location.reload();
       setCartItems({}); // Clear cart items in state
     } else {
@@ -238,7 +239,8 @@ const CartItems = () => {
                   <td>
                     <div className="line-clamp-3">{product.name}</div>
                   </td>
-                  <td>{formatPrice(product.new_price)}</td> {/* Format the price */}
+                  <td>{formatPrice(product.new_price)}</td>{" "}
+                  {/* Format the price */}
                   <td>{size}</td>
                   <td>{color}</td>
                   <td>
@@ -282,7 +284,8 @@ const CartItems = () => {
                       }}
                     />
                   </td>
-                  <td>{formatPrice(product.new_price * cartItems[key])}</td> {/* Format the total price */}
+                  <td>{formatPrice(product.new_price * cartItems[key])}</td>{" "}
+                  {/* Format the total price */}
                   <td>
                     <div className="bold-22 pl-14">
                       <TbTrash
@@ -338,11 +341,16 @@ const CartItems = () => {
                       <span className="font-bold text-black mr-2">
                         Free Shipping{" "}
                       </span>{" "}
-                      <span className="line-through">{formatPrice(20000)}</span>
+                      <span className="line-through">{formatPrice( shippingOption === "Standard" ? "20000" : "50000")}</span>
                     </h4>
                   ) : (
-                    <h4 className="text-gray-30 font-semibold">{formatPrice(20000)}</h4>
+                    <h4 className="text-gray-30 font-semibold">
+                      {formatPrice(shippingOption === "Standard" ? "20000" : "50000")}
+                    </h4>
                   )}
+                </div>
+                <div className="flexBetween py-4">
+                  <h4 className="-mt-4 medium-16">({shippingOption})</h4>
                 </div>
                 <hr />
                 {discount > 0 && (
@@ -368,15 +376,22 @@ const CartItems = () => {
                   </>
                 )}
                 <div className="flexBetween py-4">
+                  <h4 className="medium-16">Tax (VAT):</h4>
+                  <h4 className="bold-18">5%</h4>
+                </div>
+                <div className="flexBetween py-4">
                   <h4 className="bold-18">Total:</h4>
                   <h4 className="bold-18">
-                    {formatPrice(Math.max(
-                      0,
-                      getTotalCartAmount() -
-                        discount -
-                        pointsDiscount +
-                        (getTotalCartAmount() > 399000 ? 0 : 20000)
-                    ))}{" "}
+                    {formatPrice(
+                      Math.max(
+                        0,
+                        (getTotalCartAmount() -
+                          discount -
+                          pointsDiscount +
+                          (getTotalCartAmount() > 399000 ? 0 : 20000)) *
+                          1.05
+                      )
+                    )}{" "}
                     đ
                   </h4>
                 </div>
@@ -405,7 +420,9 @@ const CartItems = () => {
                 </div>
               </div>
               <div className="flex flex-col gap-10">
-                <h4 className="bold-20">Redeem Points (50,000 Points / 50,000 đ)</h4>
+                <h4 className="bold-20">
+                  Redeem Points (50,000 Points / 50,000 đ)
+                </h4>
                 <h6 className="-mt-10 font-semibold">
                   The points must be a multiple of 50
                 </h6>
@@ -459,7 +476,7 @@ const CartItems = () => {
                   required={true}
                 />
               </div>
-                            <div className="mb-4">
+              <div className="mb-4">
                 <label className="block mb-2">Email *</label>
                 {localStorage.getItem("auth-token") ? (
                   <input
@@ -467,7 +484,10 @@ const CartItems = () => {
                     className="w-full p-2 border border-gray-300"
                     value={user.email}
                     onChange={(e) =>
-                      setOrderDetails({ ...orderDetails, email: e.target.value })
+                      setOrderDetails({
+                        ...orderDetails,
+                        email: e.target.value,
+                      })
                     }
                     required={true}
                   />
@@ -476,7 +496,10 @@ const CartItems = () => {
                     type="text"
                     className="w-full p-2 border border-gray-300"
                     onChange={(e) =>
-                      setOrderDetails({ ...orderDetails, email: e.target.value })
+                      setOrderDetails({
+                        ...orderDetails,
+                        email: e.target.value,
+                      })
                     }
                     required={true}
                   />
@@ -511,6 +534,17 @@ const CartItems = () => {
                   }
                   required={true}
                 />
+              </div>
+              <div className="mb-4">
+                <label className="block mb-2">Shipping Option</label>
+                <select
+                  className="w-full p-2 border border-gray-300"
+                  value={shippingOption}
+                  onChange={(e) => setShippingOption(e.target.value)}
+                >
+                  <option value="Standard">Standard</option>
+                  <option value="Express">Express</option>
+                </select>
               </div>
               <div className="mb-4">
                 <label className="block mb-2">Note</label>
