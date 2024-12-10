@@ -381,14 +381,14 @@ const CartItems = () => {
                 </div>
                 <div className="flexBetween py-4">
                   <h4 className="bold-18">Total:</h4>
-                  <h4 className="bold-18">
+                                    <h4 className="bold-18">
                     {formatPrice(
                       Math.max(
                         0,
                         (getTotalCartAmount() -
                           discount -
                           pointsDiscount +
-                          (getTotalCartAmount() > 399000 ? 0 : 20000)) *
+                          (getTotalCartAmount() > 399000 ? 0 : shippingOption === "Standard" ? 20000 : 50000)) *
                           1.05
                       )
                     )}{" "}
@@ -541,8 +541,8 @@ const CartItems = () => {
                   value={shippingOption}
                   onChange={(e) => setShippingOption(e.target.value)}
                 >
-                  <option value="Standard">Standard</option>
-                  <option value="Express">Express</option>
+                  <option value="Standard">Standard (3-4 days)</option>
+                  <option value="Express">Express (1-2 days)</option>
                 </select>
               </div>
               <div className="mb-4">
