@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ReviewPopup from "./ReviewPopup"; // Import ReviewPopup component
-
+import withAuth from '../components/withAuth';
 const OrderDetail = () => {
   const { orderId } = useParams();
   const [orderDetails, setOrderDetails] = useState(null);
@@ -143,4 +143,4 @@ const OrderDetail = () => {
   );
 };
 
-export default OrderDetail;
+export default withAuth(OrderDetail);
