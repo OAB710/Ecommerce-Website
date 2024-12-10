@@ -68,7 +68,7 @@ const Login = () => {
     await fetch("http://localhost:4000/signup", {
       method: "POST",
       headers: {
-        Accept: "application/json",
+        Accept: "application/json", 
         "Content-Type": "application/json",
       },
       body: JSON.stringify(formData),
@@ -80,11 +80,9 @@ const Login = () => {
       localStorage.setItem("auth-token", responseData.token);
       window.location.replace("/");
     } else {
-      if (responseData.errors) {
-        alert("Phone number already exists");
-      }else{
+    
         alert(responseData.errors);
-      }
+      
     }
   };
 

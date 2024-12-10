@@ -997,7 +997,7 @@ app.post('/addorder', fetchUser, async (req, res) => {
     // Save the order
     await order.save();
 
-    //sendOrderConfirmationEmail(order);
+    sendOrderConfirmationEmail(order);
 
     // Add loyalty points to user's balance
     user.LoyaltyPoints += loyaltyPointsEarned;
