@@ -392,7 +392,6 @@ const CartItems = () => {
                           1.05
                       )
                     )}{" "}
-                    đ
                   </h4>
                 </div>
               </div>
